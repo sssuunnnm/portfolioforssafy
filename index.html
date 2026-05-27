@@ -40,8 +40,8 @@ nav#nav{
 .slide::-webkit-scrollbar{width:3px}
 .slide::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
 
-/* edge button — 평소 반투명 표시, 버튼 자체에만 hover 반응 */
-.arrow{
+/* edge button — 평소 반투명 표시, 버튼 자체에만 hover 반응 (button.arrow로 범위 한정) */
+button.arrow{
   position:fixed;top:50%;transform:translateY(-50%);z-index:8000;
   width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,0,0,.12);
   background:rgba(255,255,255,.55);cursor:pointer;
@@ -51,15 +51,15 @@ nav#nav{
   opacity:.45;
   transition:opacity .18s ease,background .18s,color .18s,border-color .18s,transform .18s;
 }
-.arrow::before{content:attr(data-glyph);line-height:1}
-.arrow.prev{left:14px}
-.arrow.next{right:14px}
-.arrow:hover{
+button.arrow::before{content:attr(data-glyph);line-height:1}
+button.arrow.prev{left:14px}
+button.arrow.next{right:14px}
+button.arrow:hover{
   opacity:1;background:var(--ac);color:#fff;border-color:var(--ac);
   transform:translateY(-50%) scale(1.08);
 }
-.arrow:disabled{opacity:.08;pointer-events:none}
-@media(max-width:600px){.arrow{display:none}}
+button.arrow:disabled{opacity:.08;pointer-events:none}
+@media(max-width:600px){button.arrow{display:none}}
 
 .prog{position:fixed;bottom:0;left:0;right:0;height:2px;background:rgba(0,0,0,.07);z-index:9000}
 .pf{height:100%;transition:width .5s ease,background .45s}
@@ -282,15 +282,18 @@ nav#nav{
   }
   .os1 ::selection { background: var(--orange); color: var(--brown); }
 
-  /* ───── HERO ───── */
+  /* ───── HERO (카드형 — 아래 highlight 카드와 동일한 픽셀 박스 톤) ───── */
   .os1 .hero {
+    max-width: 1100px;
+    margin: 40px auto 0;
+    padding: 36px 32px 32px;
     background: linear-gradient(180deg, var(--orange-soft) 0%, var(--ivory) 100%);
-    padding: 48px 24px 40px;
-    border-bottom: 4px solid var(--brown);
+    border: 3px solid var(--brown);
+    box-shadow: 4px 4px 0 var(--brown);
     text-align: center;
   }
   /* 프로젝트 정체성 (헤더 상단) */
-  .os1 .hero .proj-id { margin-bottom: 32px; }
+  .os1 .hero .proj-id { margin-bottom: 0; }
   .os1 .hero .kicker {
     display: inline-block; padding: 4px 12px;
     background: var(--brown); color: var(--ivory);
@@ -298,7 +301,7 @@ nav#nav{
     margin-bottom: 14px;
   }
   .os1 .hero .proj-name {
-    margin: 0 0 10px; font-size: 40px; letter-spacing: -.01em;
+    margin: 0 0 10px; font-size: 38px; letter-spacing: -.01em;
     color: var(--brown); font-weight: 800;
   }
   .os1 .hero .proj-name .badge {
@@ -354,6 +357,57 @@ nav#nav{
     margin: 0 0 6px; font-size: 24px; color: var(--brown);
   }
   .os1 .sec-head p { margin: 0; color: var(--brown-light); font-size: 13.5px; }
+
+  /* 제품 기능 한눈에 — 7개 chip */
+  .os1 .os-product-features{
+    max-width:1100px;margin:24px auto 0;padding:16px 20px;
+    background:var(--ivory);border:1.5px dashed rgba(54,32,0,.18);
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  }
+  .os1 .os-product-features .pf-label{
+    font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--brown-2);margin-right:6px;
+  }
+  .os1 .os-product-features .pf-chip{
+    font-size:12px;padding:4px 10px;
+    background:var(--orange-soft);color:var(--brown);
+    border:1.5px solid var(--brown);border-radius:0;font-weight:700;
+  }
+
+  /* 차별점 highlight 3카드 */
+  .os1 .os-highlights{
+    max-width:1100px;margin:24px auto 0;padding:0 24px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  }
+  @media(max-width:880px){.os1 .os-highlights{grid-template-columns:1fr}}
+  .os1 .os-highlights .hl-card{
+    background:var(--ivory);border:3px solid var(--brown);
+    padding:22px 22px 18px;
+    box-shadow:4px 4px 0 var(--brown);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .os1 .os-highlights .hl-card:hover{
+    transform:translate(-2px,-2px);
+    box-shadow:6px 6px 0 var(--brown);
+  }
+  .os1 .os-highlights .hl-ic{
+    width:42px;height:42px;
+    background:var(--orange);display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:14px;
+    border:2px solid var(--brown);
+  }
+  .os1 .os-highlights .hl-card h3{
+    margin:0 0 8px;font-size:16px;letter-spacing:-.005em;
+    color:var(--brown);font-weight:800;
+  }
+  .os1 .os-highlights .hl-card p{
+    margin:0 0 12px;font-size:13.5px;color:var(--brown-light);line-height:1.55;
+  }
+  .os1 .os-highlights .hl-card p b{color:var(--brown)}
+  .os1 .os-highlights .hl-tag{
+    display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+    padding:3px 9px;background:var(--brown);color:var(--orange-soft);
+  }
 
   /* ───── 챕터 헤더 (Part I / Part II) ───── */
   .os1 .os-chapter {
@@ -892,6 +946,23 @@ nav#nav{
     border-radius:999px;font-weight:600;
   }
 
+  /* 제품 기능 한눈에 — 차별점 chip 행 */
+  .se1 .product-features{
+    margin:18px 0 22px;padding:16px 18px;
+    background:rgba(255,255,255,.55);border:1px dashed rgba(54,32,0,.15);
+    border-radius:14px;
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  }
+  .se1 .pf-label{
+    font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--brown-2);margin-right:6px;
+  }
+  .se1 .pf-chip{
+    font-size:12px;padding:4px 10px;
+    background:var(--yellow-soft);color:var(--brown);
+    border:1px solid var(--yellow);border-radius:999px;font-weight:600;
+  }
+
   /* 케이스 스터디 앵글 (보조) */
   .se1 .case-angle{
     padding-top:22px;
@@ -901,7 +972,49 @@ nav#nav{
     margin:0 0 12px;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2;
   }
   .se1 .case-angle h2 em{font-style:normal;background:#fff;padding:0 8px;border-radius:8px;box-shadow:var(--shadow-sm)}
-  .se1 .lede{font-size:15px;color:var(--brown-2);max-width:620px;margin:0}
+  .se1 .lede{font-size:15px;color:var(--brown-2);max-width:680px;margin:0;line-height:1.7}
+  .se1 .lede .data-pill{
+    display:inline-block;font-family:"JetBrains Mono",ui-monospace,monospace;
+    font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:6px;
+    vertical-align:1px;margin:0 1px;
+  }
+  .se1 .lede .data-pill.score{background:#fff;color:var(--brown);border:1.5px solid var(--yellow)}
+  .se1 .lede .data-pill.word{background:rgba(54,32,0,.08);color:var(--brown);border:1px solid rgba(54,32,0,.12)}
+
+  /* 차별점 highlight 3카드 */
+  .se1 .se-highlights{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+    margin:32px 0 12px;
+  }
+  @media(max-width:880px){.se1 .se-highlights{grid-template-columns:1fr}}
+  .se1 .hl-card{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    padding:22px 22px 18px;
+    box-shadow:0 14px 36px -26px rgba(54,32,0,.35);
+    transition:transform .18s, box-shadow .18s;
+  }
+  .se1 .hl-card:hover{transform:translateY(-3px);box-shadow:0 22px 48px -26px rgba(54,32,0,.5)}
+  .se1 .hl-card .hl-ic{
+    width:42px;height:42px;border-radius:12px;
+    background:var(--yellow-soft);display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:14px;
+    border:1px solid var(--yellow);
+  }
+  .se1 .hl-card h3{
+    margin:0 0 8px;font-size:16px;letter-spacing:-.01em;
+    color:var(--brown);font-weight:800;
+  }
+  .se1 .hl-card p{
+    margin:0 0 12px;font-size:13.5px;color:var(--brown-2);line-height:1.55;
+  }
+  .se1 .hl-card p b{color:var(--brown)}
+  .se1 .hl-card .hl-tag{
+    display:inline-block;font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:999px;
+    background:var(--cream-2);color:var(--brown-soft);
+    border:1px dashed var(--line-2);
+    font-family:"JetBrains Mono",ui-monospace,monospace;
+  }
   .se1 .stats-inline{
     margin-top:14px;display:inline-flex;flex-wrap:wrap;gap:4px 18px;
     font-size:12.5px;color:var(--brown-2);
@@ -1315,24 +1428,40 @@ nav#nav{
     max-height:0;overflow:hidden;transition:max-height .35s ease;
     background:#fff;border-top:1px solid transparent;
   }
-  .se2 .layer.open .layer-files{max-height:600px;border-top-color:var(--line)}
+  .se2 .layer.open .layer-files{max-height:1400px;border-top-color:var(--line)}
   .se2 .layer.open .layer-head .caret{transform:rotate(90deg)}
   .se2 .caret{
     display:inline-block;width:10px;height:10px;border-right:2px solid var(--brown-soft);
     border-bottom:2px solid var(--brown-soft);transform:rotate(-45deg);
     transition:transform .2s ease;margin-left:4px;
   }
-  .se2 .file{
-    padding:9px 16px 9px 36px;font-size:13px;color:var(--brown-soft);
-    border-top:1px dashed var(--line);font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
-    position:relative;
+  /* 레이어 역할 설명 */
+  .se2 .layer-note{
+    padding:11px 16px 12px;font-size:12.5px;color:var(--brown-2);
+    background:color-mix(in srgb, var(--lc, #888) 7%, transparent);
+    border-left:2px solid var(--lc, var(--line));
+    line-height:1.55;
   }
-  .se2 .file:first-child{border-top:0}
-  .se2 .file::before{
-    content:"";position:absolute;left:18px;top:14px;width:8px;height:8px;
-    border-left:2px solid var(--line-2);border-bottom:2px solid var(--line-2);
+  /* 핵심 파일 카드 (주석된 파일만 노출) */
+  .se2 .file{
+    padding:11px 16px;
+    border-top:1px dashed var(--line);
+  }
+  .se2 .file .file-name{
+    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    font-size:13px;color:var(--brown-soft);
   }
   .se2 .file b{color:var(--brown);font-weight:700}
+  .se2 .file .file-dir{color:var(--muted)}
+  .se2 .file .file-note{
+    margin-top:4px;font-family:"Pretendard",system-ui,sans-serif;
+    font-size:12.5px;color:var(--brown-2);line-height:1.5;
+  }
+  /* 기타 파일 카운트 */
+  .se2 .file-rest{
+    padding:9px 16px;border-top:1px dashed var(--line);
+    font-size:12px;color:var(--muted);font-style:italic;
+  }
   .se2 .empty-layer{padding:14px 16px;font-size:12px;color:var(--muted);font-style:italic}
 
   /* color per layer */
@@ -1398,7 +1527,8 @@ nav#nav{
 
   /* ============ Section 3: Canvas sim ============ */
   .se2 .canvas-stage{
-    position:relative;width:100%;aspect-ratio:960/420;min-height:280px;
+    position:relative;width:100%;
+    height:clamp(220px, 28vw, 300px);
     background:var(--cream-2);
     border-radius:16px;border:1px solid var(--line);overflow:hidden;
   }
@@ -1515,12 +1645,37 @@ nav#nav{
   /* Highlight cards */
   .ng1 .highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:34px 0 14px}
   @media(max-width:880px){.ng1 .highlights{grid-template-columns:1fr}}
-  .ng1 .hcard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 16px 40px -28px rgba(20,40,90,.32);transition:.18s;display:block}
+  .ng1 .hcard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 16px 40px -28px rgba(20,40,90,.32);transition:transform .18s, box-shadow .18s;display:block}
   .ng1 .hcard:hover{transform:translateY(-3px);box-shadow:0 24px 50px -28px rgba(20,40,90,.45)}
   .ng1 .hcard .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;background:var(--muted)}
-  .ng1 .hcard h3{margin:0 0 7px;font-size:16.5px;letter-spacing:-.01em}
-  .ng1 .hcard p{margin:0;font-size:13.5px;color:var(--ink3)}
+  .ng1 .hcard h3{margin:0 0 7px;font-size:16.5px;letter-spacing:-.01em;color:var(--ink)}
+  .ng1 .hcard p{margin:0 0 12px;font-size:13.5px;color:var(--ink3);line-height:1.55}
+  .ng1 .hcard p b{color:var(--ink2)}
   .ng1 .hcard .go{margin-top:14px;font-size:12.5px;font-weight:700;color:var(--primary);display:inline-flex;align-items:center;gap:5px}
+  .ng1 .hcard .hcard-tag{
+    display:inline-block;font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:999px;
+    background:var(--muted);color:var(--primary);
+    border:1px dashed #c8d0eb;
+    font-family:"SF Mono",ui-monospace,monospace;
+  }
+
+  /* 제품 기능 한눈에 — 8개 chip 행 */
+  .ng1 .ng-product-features{
+    margin:18px 0 28px;padding:16px 18px;
+    background:rgba(255,255,255,.6);border:1px dashed #c8d0eb;
+    border-radius:14px;
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  }
+  .ng1 .ng-product-features .pf-label{
+    font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink4);margin-right:6px;
+  }
+  .ng1 .ng-product-features .pf-chip{
+    font-size:12px;padding:4px 10px;
+    background:var(--muted);color:var(--primary);
+    border:1px solid #dfe3ff;border-radius:999px;font-weight:600;
+  }
 
   /* Section frame */
   .ng1 section{padding-top:64px;scroll-margin-top:84px}
@@ -1844,9 +1999,9 @@ nav#nav{
 
   .ng2 .panel-title{font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--ink4);text-transform:uppercase;margin:0 0 14px}
 
-  /* ── SSE diagram ── */
-  .ng2 .diagram-wrap{overflow-x:auto}
-  .ng2 .diagram{position:relative;width:830px;height:430px;margin:0 auto}
+  /* ── SSE diagram (830x430 디자인 캔버스 → 컨테이너 폭에 맞춰 JS uniform scale) ── */
+  .ng2 .diagram-wrap{position:relative;width:100%;aspect-ratio:830/430;overflow:hidden}
+  .ng2 .diagram{position:absolute;top:0;left:0;width:830px;height:430px;transform-origin:top left}
   .ng2 .diagram svg{position:absolute;inset:0;width:830px;height:430px;pointer-events:none}
   .ng2 .node{
     position:absolute;width:150px;height:54px;margin-left:-75px;margin-top:-27px;
@@ -2074,32 +2229,52 @@ nav#nav{
   <div class="proj-id">
     <span class="kicker">CASE STUDY · ANDROID</span>
     <h1 class="proj-name">OneStep <span class="badge">Android</span></h1>
-    <p class="tagline">한 발짝씩, 행동을 회복하는 고립·은둔 청년 페이스 메이커</p>
+    <p class="tagline">마이크로 루틴 × AI 감성 펫 × 비대면 안전지대 — 고립·은둔 청년 행동 회복 페이스 메이커</p>
     <div class="tech-chips">
       <span>Kotlin</span><span>Jetpack Compose</span><span>MVVM + Clean Architecture</span>
-      <span>Hilt</span><span>Mapbox</span><span>STOMP</span>
-    </div>
-  </div>
-
-  <div class="case-angle">
-    <h2>"GPS 한 번 튀면 산책이 끝나버렸어요"</h2>
-    <p class="sub">
-      OneStep 산책 추적 기능 — Mapbox + Compose 환경에서 GPS 노이즈, 백그라운드 추적,
-      파생 상태 동기화를 어떻게 풀었는지 30초 데모.
-    </p>
-    <div class="stats-inline">
-      <span><b>StateFlows</b> 12</span>
-      <span><b>Arrival Guard</b> 4중</span>
-      <span><b>Commits</b> 38</span>
-      <span><b>MVP</b> v1.0</span>
+      <span>Hilt</span><span>Mapbox</span><span>STOMP · WebSocket</span>
     </div>
   </div>
 </header>
 
+<!-- 제품 기능 한눈에 -->
+<section class="os-product-features">
+  <span class="pf-label">이런 제품</span>
+  <span class="pf-chip">마이크로 루틴 챌린지</span>
+  <span class="pf-chip">AI 감성 펫</span>
+  <span class="pf-chip">가상 창문 · 익명 편지</span>
+  <span class="pf-chip">모닥불 고민 상담소</span>
+  <span class="pf-chip">단계별 산책 (방→현관→공원)</span>
+  <span class="pf-chip">Fire 실시간 챗</span>
+  <span class="pf-chip">No-Failure Policy</span>
+</section>
+
+<!-- 차별점 highlight 카드 3장 -->
+<section class="os-highlights">
+  <div class="hl-card">
+    <div class="hl-ic">🌱</div>
+    <h3>No-Failure Policy</h3>
+    <p>미수행 시 <b>페널티나 기록이 남지 않음</b>. 매일 새로운 시작이 보장되어 지속적인 재도전을 유도하는 경험 설계.</p>
+    <span class="hl-tag">실패 부담 zero</span>
+  </div>
+  <div class="hl-card">
+    <div class="hl-ic">🐾</div>
+    <h3>즉각적 시각 보상</h3>
+    <p>루틴 달성 시 <b>펫 성장 · GP 획득 · Confetti 연출</b>. 행동 직후 보상을 화면 위에 즉시 보여 동기를 끊지 않음.</p>
+    <span class="hl-tag">게이미피케이션 · 펫 동반자</span>
+  </div>
+  <div class="hl-card">
+    <div class="hl-ic">🤫</div>
+    <h3>비대면 심리 안전지대</h3>
+    <p>대면 부담 없는 <b>AI 음성 대화 + 익명 소통</b>. 모닥불 상담소의 5분 대화는 휘발성 + AI가 위로 편지로 정제.</p>
+    <span class="hl-tag">진입장벽 최소화</span>
+  </div>
+</section>
+
 <div class="os-chapter">
   <span class="os-chapter-kicker">Part I</span>
   <h2 class="os-chapter-title">Product Walkthrough</h2>
-  <p class="os-chapter-desc">사용자가 보는 화면과 핵심 동작 — 산책 추적이 GPS 노이즈를 어떻게 견뎌내는지 30초 데모로.</p>
+  <p class="os-chapter-desc">사용자가 마주하는 핵심 화면 — 산책 챌린지 · Fire 챗 · 마이룸(AI 펫) · 편지함.</p>
 </div>
 
 <!-- ───── 1. 스크린샷 갤러리 ───── -->
@@ -2116,7 +2291,7 @@ nav#nav{
         <!-- 교체: <img src="screens/walk.png" alt="산책 화면"> -->
         <div class="placeholder">📍<br/>WALK<br/>SCREEN</div>
       </div>
-      <figcaption class="cap"><b>WALK</b>Mapbox로 경로 추적<br/>실시간 거리 · 속도 · 시간</figcaption>
+      <figcaption class="cap"><b>WALK</b>단계별 산책 챌린지<br/>(방→현관→공원), Mapbox 경로 추적</figcaption>
     </figure>
     <figure class="phone">
       <div class="notch"></div>
@@ -2124,7 +2299,7 @@ nav#nav{
         <!-- 교체: <img src="screens/fire.png" alt="파이어챗"> -->
         <div class="placeholder">🔥<br/>FIRE<br/>CHAT</div>
       </div>
-      <figcaption class="cap"><b>FIRE</b>STOMP 실시간 챗<br/>유저당 버블 Lifecycle 관리</figcaption>
+      <figcaption class="cap"><b>FIRE</b>익명 실시간 챗 (5분 휘발성)<br/>STOMP · 버블 Lifecycle 관리</figcaption>
     </figure>
     <figure class="phone">
       <div class="notch"></div>
@@ -2132,7 +2307,7 @@ nav#nav{
         <!-- 교체: <img src="screens/myroom.png" alt="마이룸"> -->
         <div class="placeholder">🏠<br/>MY<br/>ROOM</div>
       </div>
-      <figcaption class="cap"><b>MY ROOM</b>레벨에 따라 진화하는<br/>반려동물 픽셀 캐릭터</figcaption>
+      <figcaption class="cap"><b>MY ROOM</b>AI 감성 펫 + GP 보상<br/>루틴 수행으로 성장하는 픽셀 캐릭터</figcaption>
     </figure>
     <figure class="phone">
       <div class="notch"></div>
@@ -2140,7 +2315,7 @@ nav#nav{
         <!-- 교체: <img src="screens/letter.png" alt="편지함"> -->
         <div class="placeholder">✉️<br/>LETTER<br/>BOX</div>
       </div>
-      <figcaption class="cap"><b>LETTER</b>STT 음성으로<br/>편지 작성</figcaption>
+      <figcaption class="cap"><b>LETTER</b>가상 창문 · 익명 편지함<br/>모닥불 상담 AI 정제 위로 편지</figcaption>
     </figure>
   </div>
 </section>
@@ -2285,8 +2460,8 @@ nav#nav{
 
 <div class="os-chapter">
   <span class="os-chapter-kicker">Part II</span>
-  <h2 class="os-chapter-title">Architecture Deep Dive</h2>
-  <p class="os-chapter-desc">위 데모를 만들어낸 코드 구조를 모듈/상태 단위로 들여다봅니다 — 레이어 맵 &amp; WalkViewModel 상태 흐름.</p>
+  <h2 class="os-chapter-title">Architecture Deep Dive — FE에서 풀어낸 문제</h2>
+  <p class="os-chapter-desc">산책 챌린지 · Fire 챗 · 마이룸 · 편지함 — <b>10여 개 화면</b>과 <b>실시간 위치/채팅/펫 상태</b>를 한 앱에 담기 위해 MVVM + Clean Architecture로 구조화했습니다. 그 중 가장 까다로웠던 한 사례 — <b>"GPS 한 번 튀면 산책이 끝나버리는 문제"</b> 를 4중 가드와 12개의 StateFlow 파생으로 풀어낸 흐름을 모듈 · 상태 단위로 들여다봅니다.</p>
 </div>
 
 </div>
@@ -2351,7 +2526,7 @@ nav#nav{
         <div class="proj-id">
           <span class="kicker">CASE STUDY · ANDROID</span>
           <h1 class="proj-name">Shadoweng <span class="proj-badge">Android</span></h1>
-          <p class="tagline">따라 말할수록, 자연스러운 영어 — 셰도잉 학습 앱</p>
+          <p class="tagline">유튜브 콘텐츠 × AI 발화 분석 × 게임화 — 셰도잉 학습 앱</p>
           <div class="tech-chips">
             <span>Kotlin</span><span>Jetpack Compose</span>
             <span>MVI · StateFlow + Channel</span>
@@ -2360,16 +2535,30 @@ nav#nav{
           </div>
         </div>
 
+        <div class="product-features">
+          <span class="pf-label">이런 제품</span>
+          <span class="pf-chip">유튜브 콘텐츠 직접 입력</span>
+          <span class="pf-chip">무자막 / 자막 모드</span>
+          <span class="pf-chip">오류 시각화</span>
+          <span class="pf-chip">맞춤 스크립트 자동 생성</span>
+          <span class="pf-chip">세션 리포트</span>
+          <span class="pf-chip">복습 모드</span>
+          <span class="pf-chip">일일 챌린지 + 리그 리더보드</span>
+        </div>
+
         <div class="case-angle">
-          <h2>발음 평가를 <em>"읽힌다"</em>로 바꿨습니다.</h2>
+          <h2>FE에서 한 일 — 발음 평가를 <em>"읽힌다"</em>로.</h2>
           <div class="lede">
-            AI가 뱉어내는 <code style="background:rgba(255,255,255,.55);padding:1px 6px;border-radius:6px">dragged / rushed / missed</code> 같은 JSON 텍스트를,
-            학습자가 <b>한 줄 보고 바로 이해할 수 있는 시각 피드백</b>으로 바꿨습니다. Compose Text 위에 Canvas를 정확한 좌표로 덧그려서요.
+            서버는 사용자 발화를 분석해 두 가지 형태의 결과를 내려줍니다 —
+            <span class="data-pill score">Style Score 0–100</span>(pitch · energy · 강세 · 억양 · 속도 다차원 일치율) 과
+            단어별 태그 <span class="data-pill word">dragged / rushed / missed</span>.
+            FE는 이 JSON을 <b>학습자가 한눈에 이해할 수 있는 시각 피드백</b>으로 변환합니다 —
+            점수는 카테고리 바 + 등급 메시지로, 단어 태그는 <b>Compose Text 위 Canvas에 정확한 좌표</b>로 화살표·곡선·하이라이트를 덧그려서.
           </div>
           <div class="stats-inline">
             <span><b>Feature</b> 핵심 3 + 기반 5</span>
             <span><b>Architecture</b> MVI</span>
-            <span><b>Feedback</b> 3종</span>
+            <span><b>Feedback</b> 3종 (화살표·곡선·하이라이트)</span>
             <span><b>UI</b> 100% Compose</span>
           </div>
         </div>
@@ -2398,6 +2587,28 @@ nav#nav{
     </div>
   </section>
 
+  <!-- 차별점 3가지 highlight 카드 -->
+  <section class="se-highlights">
+    <div class="hl-card">
+      <div class="hl-ic">📺</div>
+      <h3>사용자 주도형 콘텐츠</h3>
+      <p>대부분 셰도잉 앱은 <b>자체 제공 콘텐츠만</b> 사용. Shadoweng은 <b>유튜브 URL을 직접 입력</b>해 원하는 영상의 원하는 구간을 학습.</p>
+      <span class="hl-tag">영상은 서버에 저장되지 않음 (URL 기반 음성 추출)</span>
+    </div>
+    <div class="hl-card">
+      <div class="hl-ic">✨</div>
+      <h3>오류 시각화 + 맞춤 스크립트</h3>
+      <p>단순히 "틀렸다"가 아니라 <b>강세·발음 포인트를 화면 위에 직접 그려</b> 보여줌. 반복되는 오류는 자동으로 <b>맞춤형 셰도잉 스크립트</b>로 누적.</p>
+      <span class="hl-tag">Compose Text + Canvas 좌표 정합</span>
+    </div>
+    <div class="hl-card">
+      <div class="hl-ic">🏆</div>
+      <h3>게이미피케이션 학습 동기</h3>
+      <p>매일 난이도별 문장 → Style Score 누적 → <b>리그별 경쟁</b>. 상위 10% 승격 / 하위 10% 강등, 4주 미사용 시 <b>Freeze</b>로 보호.</p>
+      <span class="hl-tag">일일 챌린지 · 리더보드</span>
+    </div>
+  </section>
+
   <div class="se-chapter">
     <span class="se-chapter-kicker">Part I</span>
     <h2 class="se-chapter-title">Product Walkthrough</h2>
@@ -2408,7 +2619,7 @@ nav#nav{
   <section class="card" id="se1_shots">
     <div class="sec-head">
       <h2><span class="num">01</span>화면 둘러보기</h2>
-      <div class="why">학습 흐름을 따라가며 보세요. <b>홈 → 학습 세션 → 평가 결과 → 게임</b> 4개 화면.</div>
+      <div class="why">학습 흐름: <b>오늘의 챌린지(홈) → 유튜브 구간 셰도잉 → Style Score 리포트 → 일일 챌린지 + 리그 리더보드</b>.</div>
     </div>
     <div class="phones">
 
@@ -2424,7 +2635,7 @@ nav#nav{
             <div class="btn-mock">계속하기</div>
           </div>
         </div>
-        <div class="phone-title">홈</div>
+        <div class="phone-title">홈 · 오늘의 챌린지</div>
         <div class="phone-sub">HomeScreen.kt</div>
       </div>
 
@@ -2441,7 +2652,7 @@ nav#nav{
             <div style="margin:auto auto 0;width:56px;height:56px;border-radius:50%;background:var(--red);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px">●</div>
           </div>
         </div>
-        <div class="phone-title">학습 세션</div>
+        <div class="phone-title">학습 세션 · 유튜브 구간 셰도잉</div>
         <div class="phone-sub">StudySessionScreen.kt</div>
       </div>
 
@@ -2463,7 +2674,7 @@ nav#nav{
             <div class="btn-mock">리포트 보기</div>
           </div>
         </div>
-        <div class="phone-title">평가 리포트</div>
+        <div class="phone-title">평가 리포트 · Style Score</div>
         <div class="phone-sub">StudyReportScreen.kt</div>
       </div>
 
@@ -2483,7 +2694,7 @@ nav#nav{
             <div style="text-align:center;font-size:10px;color:var(--muted)">곧 녹음이 시작돼요</div>
           </div>
         </div>
-        <div class="phone-title">게임 라운드</div>
+        <div class="phone-title">일일 챌린지 · 리그 + 리더보드</div>
         <div class="phone-sub">GamePlayScreen.kt</div>
       </div>
 
@@ -2598,7 +2809,7 @@ nav#nav{
   <!-- ============ Section 1 ============ -->
   <section class="card">
     <h2><span class="badge">04</span> Feature 도메인 구조</h2>
-    <p class="lede">제품 가치를 만드는 <b>핵심 3개 도메인</b>을 layer별로 분리. 도메인을 선택하면 각 layer가 펼쳐지며 핵심 파일이 드러납니다.</p>
+    <p class="lede">제품 가치를 만드는 <b>핵심 3개 도메인</b>을 layer별로 분리. 각 layer가 <b>왜 이렇게 나뉘는지</b>와 <b>★ 표시된 핵심 파일의 의도</b>를 함께 봅니다.</p>
     <div class="tree-grid">
       <div class="domain-list" id="se2_domainList"></div>
       <div class="layers" id="se2_layers"></div>
@@ -2750,42 +2961,55 @@ nav#nav{
 <main>
   <!-- HERO -->
   <div class="hero">
-    <span class="kicker">● 규제 관리 시스템 프론트엔드 · 실제 구현 기반 데모</span>
-    <h1>"문서를 올리면 <span class="g">처리가 보이고</span>,<br>동시 요청에도 <span class="g">흔들리지 않게.</span>"</h1>
-    <p class="lead">단순 CRUD를 넘어, <b>실시간 스트리밍</b>과 <b>동시성</b> 같은 까다로운 문제를 프론트엔드에서 설계로 풀었습니다. 아래 데모는 모두 레포의 실제 코드 흐름과 상태값을 그대로 재현합니다.</p>
+    <span class="kicker">● 네트워크 기지국 규제 인증 시험 자동화 · AI Agent</span>
+    <h1>"자연어로 <span class="g">시험을 시키고</span>,<br>진행을 <span class="g">실시간으로 본다.</span>"</h1>
+    <p class="lead">엔지니어가 수십~수백 번 직접 주파수를 바꾸며 캡처하던 수동 시험을, <b>한 줄 자연어 명령으로 실제 계측기(R&amp;S FSW)가 자동 구동</b>되게 만들었습니다. FE는 그 흐름이 끊기지 않고 사용자에게 투명하게 보이도록 설계했습니다.</p>
     <div class="meta">
-      <div>도메인<b>규제 문서 · 인증 관리</b></div>
+      <div>도메인<b>통신 규제 인증 · 계측 자동화</b></div>
       <div>핵심 스택<b>React · TypeScript · TanStack Query</b></div>
-      <div>난이도 포인트<b>SSE 스트리밍 · 토큰 갱신 동시성</b></div>
+      <div>AI 백엔드<b>LLM · LangGraph · OCR · PyVISA/SCPI</b></div>
     </div>
   </div>
 
-  <!-- HIGHLIGHTS -->
+  <!-- PRODUCT FEATURES — 이런 제품 -->
+  <div class="ng-product-features">
+    <span class="pf-label">이런 제품</span>
+    <span class="pf-chip">자연어 시험 실행</span>
+    <span class="pf-chip">시험 계획 자동 생성</span>
+    <span class="pf-chip">프리셋 관리</span>
+    <span class="pf-chip">계측기 자동 제어 (PyVISA·SCPI)</span>
+    <span class="pf-chip">OCR 프리셋 자동 생성</span>
+    <span class="pf-chip">결과 분석 · 보고서</span>
+    <span class="pf-chip">히스토리 추적</span>
+    <span class="pf-chip">실시간 대시보드</span>
+  </div>
+
+  <!-- PRODUCT DIFFERENTIATORS — 차별점 3가지 (제품 본질) -->
   <div class="highlights">
-    <a class="hcard" href="#ng1_sse">
-      <div class="ic">📡</div>
-      <h3>실시간 진행률 (SSE)</h3>
-      <p><code>EventSource</code>가 JWT 헤더를 못 실어, <code>fetch + ReadableStream</code>으로 SSE를 직접 파싱했습니다.</p>
-      <span class="go">데모 체험 →</span>
-    </a>
-    <a class="hcard" href="#ng1_sse">
-      <div class="ic">🔁</div>
-      <h3>끊김 자동 복구</h3>
-      <p>종료 이벤트 없이 스트림이 끊기면 <b>3초 뒤 자동 재연결</b>. 새 탭·새로고침에도 추적이 복원됩니다.</p>
-      <span class="go">끊김 시나리오 →</span>
-    </a>
-    <a class="hcard" href="#ng1_race">
-      <div class="ic">🔐</div>
-      <h3>동시성 안전</h3>
-      <p>요청 N개가 <b>동시에 401</b>을 맞아도 토큰 갱신은 정확히 <b>한 번</b>. 나머지는 큐에서 대기 후 재시도.</p>
-      <span class="go">시뮬레이터 →</span>
-    </a>
+    <div class="hcard">
+      <div class="ic">🤖</div>
+      <h3>End-to-End AI Agent</h3>
+      <p>단순 챗봇이 아니라 <b>자연어 명령 → 시험 계획 → 실제 계측기 구동</b>까지 단일 흐름. 엔지니어의 수동 반복 작업이 의사결정 중심 워크플로우로 재편됩니다.</p>
+      <span class="hcard-tag">LLM + LangGraph 상태 머신</span>
+    </div>
+    <div class="hcard">
+      <div class="ic">🛡️</div>
+      <h3>LLM 할루시네이션 통제</h3>
+      <p>고가 장비 보호를 위해 권한을 분리 — <b>LLM은 Plan만 수립</b>, 실제 장비 조작은 <b>도메인 전문가가 검증한 Recipe (Python 객체)</b> 가 전담.</p>
+      <span class="hcard-tag">Plan / Recipe 분리 아키텍처</span>
+    </div>
+    <div class="hcard">
+      <div class="ic">📑</div>
+      <h3>OCR 기반 동적 확장</h3>
+      <p>새 규제 문서·매뉴얼의 표 데이터를 <b>OCR로 즉시 파싱 → 시스템 프리셋 자동 생성</b>. 인증 파트 외 다른 부서까지 확장 가능한 구조.</p>
+      <span class="hcard-tag">Vision AI · 동적 파이프라인</span>
+    </div>
   </div>
 
   <div class="ng-chapter">
     <span class="ng-chapter-kicker">Part I</span>
     <h2 class="ng-chapter-title">Product Walkthrough</h2>
-    <p class="ng-chapter-desc">사용자가 실제로 마주하는 화면과 동작 — 문서 관리부터 실시간 처리 추적까지.</p>
+    <p class="ng-chapter-desc">사용자가 실제로 마주하는 화면과 동작 — 규제 문서 관리 · 시험 진행 모니터링 · 보고서까지.</p>
   </div>
 
   <!-- ① GALLERY -->
@@ -3110,8 +3334,8 @@ const scheduleRetry = (documentId, options = {}) => {
 
 <div class="ng-chapter">
   <span class="ng-chapter-kicker">Part II</span>
-  <h2 class="ng-chapter-title">Design Interactive</h2>
-  <p class="ng-chapter-desc">규제 문서 처리 추적(SSE)과 토큰 갱신(race condition) 두 모듈을 <b>레포의 실제 코드 값과 분기 그대로</b> 시각화했습니다. 다이어그램의 상태를 클릭하거나 시뮬레이션을 실행해 흐름을 따라가 보세요.</p>
+  <h2 class="ng-chapter-title">Design Interactive — FE에서 어떻게 풀었나</h2>
+  <p class="ng-chapter-desc">제품 자체는 AI Agent · 계측기 제어 같은 백엔드 비중이 크지만, FE도 <b>장시간 시험을 끊김 없이 보여주기</b> 와 <b>동시 사용자의 인증 토큰 충돌 차단</b> 같은 까다로운 문제를 풀어야 했습니다. 아래 두 모듈을 <b>레포의 실제 코드 값과 분기 그대로</b> 시각화했습니다 — 다이어그램 상태를 클릭하거나 시뮬레이션을 실행해 흐름을 따라가 보세요.</p>
 </div>
 </div>
 <div class="ng2">
@@ -3137,7 +3361,7 @@ const scheduleRetry = (documentId, options = {}) => {
       <div>
         <h2>SSE 연결 상태 머신</h2>
         <span class="file">src/features/regulation/hooks/useRegulationProcessingTracker.ts</span>
-        <p>단순 구독이 아니라 <b>스냅샷 선조회 → 진행 중일 때만 스트림 연결 → 비정상 종료 시 자동 재연결</b>까지 처리하는 상태 머신입니다. 각 상태를 클릭하면 해당 분기를 담당하는 실제 코드가 표시됩니다.</p>
+        <p>인증 시험은 한 번에 <b>수십 분 ~ 수 시간</b> 걸리는 장시간 작업. 중간에 끊김 한 번이 곧 캡처 재수집을 의미하므로, 단순 구독이 아니라 <b>스냅샷 선조회 → 진행 중일 때만 스트림 연결 → 비정상 종료 시 자동 재연결</b>까지 처리하는 상태 머신으로 설계했습니다. 각 상태를 클릭하면 해당 분기를 담당하는 실제 코드가 표시됩니다.</p>
       </div>
     </div>
 
@@ -3192,7 +3416,7 @@ const scheduleRetry = (documentId, options = {}) => {
       <div>
         <h2>동시 401 → 단 한 번의 토큰 갱신</h2>
         <span class="file">src/api/client.ts</span>
-        <p>요청 3개가 <b>동시에 401</b>을 맞아도 토큰 갱신은 한 번만. 첫 요청이 '갱신 담당'이 되고 나머지는 <code>subscribe()</code>로 큐에 대기하다가, 갱신이 끝나면 <code>notify()</code>로 한꺼번에 깨워 재시도합니다.</p>
+        <p>대시보드는 진행률 · 캡처 이미지 · 계측기 상태를 <b>여러 API에서 동시에 폴링</b>합니다. 토큰이 만료된 순간 요청 N개가 <b>동시에 401</b>을 맞아도 갱신은 정확히 <b>한 번만</b>. 첫 요청이 '갱신 담당'이 되고 나머지는 <code>subscribe()</code>로 큐에 대기하다가, 갱신이 끝나면 <code>notify()</code>로 한꺼번에 깨워 재시도합니다.</p>
       </div>
     </div>
 
@@ -4762,7 +4986,7 @@ const DOMAINS = [
     }
   },
   {
-    key:"game", title:"game", desc:"하트 · 라운드 · 리더보드",
+    key:"game", title:"game", desc:"일일 챌린지 · 리그(승격·강등·Freeze) · 리더보드",
     layers:{
       api:["GameApi.kt","dto/GameDtos.kt"],
       domain:["model/GameEvalResult.kt","model/GameLeaderboard.kt","model/GameProfile.kt","model/GameRound.kt","model/LevelStatus.kt"],
@@ -4772,7 +4996,7 @@ const DOMAINS = [
     }
   },
   {
-    key:"content", title:"content", desc:"유튜브 등록 · 구간 선택",
+    key:"content", title:"content", desc:"유튜브 URL 직접 입력 → 구간 셰도잉 (영상 비저장)",
     layers:{
       api:["ContentApi.kt","dto/ContentDtos.kt"],
       presentation:["loading/ContentLoadingScreen.kt","loading/ContentLoadingState.kt","loading/ContentLoadingViewModel.kt","range/ContentRangeScreen.kt","range/ContentRangeState.kt","range/ContentRangeViewModel.kt","register/ContentRegisterScreen.kt","register/ContentRegisterState.kt","register/ContentRegisterViewModel.kt"],
@@ -4786,6 +5010,28 @@ const LAYER_ORDER = ["api","data","domain","mapper","presentation","repository",
 const LAYER_LABEL = {
   api:"api", data:"data", domain:"domain", mapper:"mapper",
   presentation:"presentation", repository:"repository", util:"util"
+};
+/* 레이어 역할 — 무엇을 담는 폴더인지만 */
+const LAYER_NOTES = {
+  api:          "Retrofit 인터페이스 + DTO 정의.",
+  data:         "디바이스 로컬 저장소 (DataStore · TokenStorage 등).",
+  domain:       "Android 의존성 없는 순수 Kotlin 모델 · 비즈니스 규칙.",
+  mapper:       "DTO ↔ 도메인 모델 변환.",
+  presentation: "Compose Screen + ViewModel + UiState.",
+  repository:   "도메인의 repository interface ↔ data의 Impl 분리.",
+  util:         "도메인 비종속 헬퍼.",
+};
+/* 핵심 파일 — SECTION 05·06에서 깊게 다루는 항목은 제외 */
+const FILE_NOTES = {
+  // study (EvaluationAnnotationMapper.kt 는 SECTION 06에서 다룸)
+  "EvaluationResult.kt": "단어별 발음 평가 결과 모델",
+  "StudySession.kt": "한 회차 학습 세션 모델",
+  // game (GamePlayContract / ViewModel 은 SECTION 05에서 다룸)
+  "model/GameLeaderboard.kt": "리더보드 모델",
+  // content
+  "util/YoutubeUrlParser.kt": "URL 변형(youtu.be / shorts / playlist) 정규화",
+  "register/ContentRegisterViewModel.kt": "유튜브 URL 등록 + 메타데이터 확보",
+  "range/ContentRangeViewModel.kt": "셰도잉 구간 start/end 선택",
 };
 
 function renderDomainList(){
@@ -4816,9 +5062,13 @@ function renderLayers(key){
   const presentInOrder = LAYER_ORDER.filter(l=>d.layers[l]);
   presentInOrder.forEach((layer, idx)=>{
     const files = d.layers[layer];
+    /* 주석된 핵심 파일만 노출. 나머지는 카운트로만. */
+    const keyFiles = files.filter(f => FILE_NOTES[f]);
+    const otherCount = files.length - keyFiles.length;
     const isOpen = idx === 0 || (layer === "presentation");
     const lay = document.createElement("div");
     lay.className = "layer lay-" + layer + (isOpen ? " open" : "");
+    const note = LAYER_NOTES[layer] || "";
     lay.innerHTML = `
       <div class="layer-head">
         <span class="layer-tag">
@@ -4828,12 +5078,14 @@ function renderLayers(key){
         <span class="layer-count">${files.length} files</span>
       </div>
       <div class="layer-files">
-        ${files.map(f=>{
+        ${note ? `<div class="layer-note">${note}</div>` : ""}
+        ${keyFiles.map(f=>{
           const parts = f.split("/");
           const name = parts.pop();
-          const prefix = parts.length ? `<span style="color:var(--muted)">${parts.join("/")}/</span>` : "";
-          return `<div class="file">${prefix}<b>${name}</b></div>`;
+          const prefix = parts.length ? `<span class="file-dir">${parts.join("/")}/</span>` : "";
+          return `<div class="file has-note"><div class="file-name">${prefix}<b>${name}</b></div><div class="file-note">${FILE_NOTES[f]}</div></div>`;
         }).join("")}
+        ${otherCount > 0 ? `<div class="file-rest">+ 기타 ${otherCount}개 파일</div>` : ""}
       </div>
     `;
     lay.querySelector(".layer-head").addEventListener("click", ()=>lay.classList.toggle("open"));
@@ -4916,7 +5168,7 @@ function stopMvi(){
 mviPlayBtn.addEventListener("click", playMvi);
 mviResetBtn.addEventListener("click", ()=>{stopMvi(); clearAll(); mviStepTag.innerHTML = "User taps <b>'녹음 시작'</b> · Click <b>흐름 재생</b>";});
 
-/* MVI stage uniform scaling — 컨테이너 폭에 맞춰 960x480 캔버스를 비율 유지하며 축소 */
+/* MVI stage uniform scaling — 컨테이너가 좁아지면 축소, 960px 초과해도 확대 안 함 (텍스트 흐려짐 방지) */
 (function setupMviScale(){
   const stage = document.getElementById('se2_mviStage');
   if(!stage) return;
@@ -4925,8 +5177,8 @@ mviResetBtn.addEventListener("click", ()=>{stopMvi(); clearAll(); mviStepTag.inn
   const rescale = ()=>{
     const w = stage.clientWidth;
     if(!w) return;
-    const s = w / 960;
-    canvas.style.transform = `scale(${s})`;
+    const s = Math.min(1, w / 960);  // 최대 1배 (확대 금지)
+    canvas.style.transform = `translateX(${(w - 960 * s) / 2}px) scale(${s})`;
   };
   rescale();
   if(window.ResizeObserver){
@@ -5441,10 +5693,10 @@ const MOCKS = {
     </div>`,
 };
 const SHOTS=[
-  {t:"규제 목록 · 필터",icon:"📋",url:"/regulations",mock:MOCKS.list},
+  {t:"규제 문서 목록 · 필터",icon:"📋",url:"/regulations",mock:MOCKS.list},
   {t:"문서 상세 · AI 요약/메모",icon:"📑",url:"/regulations/:id",mock:MOCKS.detail},
   {t:"문서 비교 (최대 3개)",icon:"🔍",url:"/regulations/compare",mock:MOCKS.compare},
-  {t:"실시간 처리 상태 패널",icon:"📡",url:"/regulations (processing)",mock:MOCKS.processing},
+  {t:"실시간 시험 진행 대시보드",icon:"📡",url:"/tests (running)",mock:MOCKS.processing},
 ];
 const grid=document.getElementById("ng1_gallery-grid");
 SHOTS.forEach((s,i)=>{
@@ -5950,6 +6202,24 @@ function selectState(id){
     `<span class="st"><span class="pill" style="background:${s.color}">${s.label}</span></span><p>${s.desc}</p>`;
 }
 selectState("syncing");
+
+/* SSE diagram uniform scaling — 컨테이너 폭에 맞춰 830x430 캔버스 축소 (확대는 안 함) */
+(function setupSseDiagramScale(){
+  const wrap = diagram.parentElement;
+  if(!wrap) return;
+  const rescale = ()=>{
+    const w = wrap.clientWidth;
+    if(!w) return;
+    const s = Math.min(1, w / 830);
+    diagram.style.transform = `translateX(${(w - 830 * s) / 2}px) scale(${s})`;
+  };
+  rescale();
+  if(window.ResizeObserver){
+    new ResizeObserver(rescale).observe(wrap);
+  }else{
+    window.addEventListener('resize', rescale);
+  }
+})();
 
 /* ── SSE animations ── */
 const evlog=document.getElementById("ng2_evlog");
