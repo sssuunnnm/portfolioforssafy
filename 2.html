@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shadoweng · FE 포트폴리오</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --yellow:#FEDF57; --yellow-2:#FFF1A0; --yellow-soft:#FFF7C8;
+    --brown:#362000; --brown-2:#5A3A0E; --brown-soft:#7a5a2a;
+    --cream:#FAF9F6; --cream-2:#F5F5F3;
+    --line:#EEEAE0; --line-2:#E0DACA;
+    --muted:#888; --muted-2:#aaa;
+    --red:#FF5D5D; --green:#2EB872; --blue:#1565C0;
+    --shadow-sm: 0 2px 0 rgba(54,32,0,0.08);
+    --shadow-md: 0 6px 0 rgba(54,32,0,0.06), 0 12px 32px rgba(54,32,0,0.06);
+    --shadow-btn: 0 4px 0 rgba(54,32,0,0.22);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;scroll-behavior:smooth}
+  body{
+    font-family:"Pretendard",system-ui,-apple-system,Segoe UI,sans-serif;
+    background:var(--cream);color:var(--brown);
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:36px 24px 80px}
+
+  /* ========== HERO ========== */
+  .hero{
+    position:relative;background:var(--yellow);border-radius:28px;
+    padding:48px 44px;overflow:hidden;box-shadow:var(--shadow-md);
+  }
+  .hero::before{
+    content:"";position:absolute;right:-80px;top:-100px;width:340px;height:340px;
+    background:radial-gradient(circle,#FFF1A0 0%,transparent 65%);
+  }
+  .hero::after{
+    content:"";position:absolute;right:40px;bottom:-40px;width:160px;height:160px;
+    background:radial-gradient(circle,rgba(255,255,255,.45) 0%,transparent 65%);
+  }
+  .hero-grid{position:relative;display:grid;grid-template-columns:1fr 220px;gap:32px;align-items:center;z-index:1}
+  @media(max-width:760px){.hero-grid{grid-template-columns:1fr}}
+  .kicker{
+    display:inline-block;font-size:12px;letter-spacing:.18em;font-weight:800;
+    color:var(--brown-2);text-transform:uppercase;background:rgba(54,32,0,.08);
+    padding:6px 12px;border-radius:999px;
+  }
+  h1{margin:14px 0 12px;font-size:42px;font-weight:800;letter-spacing:-0.025em;line-height:1.15}
+  h1 em{font-style:normal;background:#fff;padding:0 8px;border-radius:8px;box-shadow:var(--shadow-sm)}
+  .lede{font-size:16px;color:var(--brown-2);max-width:620px}
+  .pitch-stats{display:flex;gap:18px;margin-top:22px;flex-wrap:wrap}
+  .stat{
+    background:rgba(255,255,255,0.55);backdrop-filter:blur(6px);
+    border:1px solid rgba(54,32,0,0.08);
+    padding:12px 16px;border-radius:14px;min-width:140px;
+  }
+  .stat .v{font-size:22px;font-weight:800;letter-spacing:-0.02em}
+  .stat .l{font-size:11px;color:var(--brown-2);font-weight:600;margin-top:2px}
+
+  .engmu{
+    width:200px;height:200px;border-radius:50%;
+    background:#fff;display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-md);position:relative;
+  }
+  .engmu svg{width:140px;height:140px}
+  .engmu .ring{
+    position:absolute;inset:-8px;border-radius:50%;
+    border:3px dashed rgba(54,32,0,.18);animation:spin 18s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .quick-nav{display:flex;gap:8px;margin-top:26px;flex-wrap:wrap}
+  .qn{
+    background:#fff;color:var(--brown);border:1px solid rgba(54,32,0,.08);
+    padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;
+    text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+    transition:transform .12s;
+  }
+  .qn:hover{transform:translateY(-1px)}
+  .qn .dot{width:8px;height:8px;border-radius:50%;background:var(--brown)}
+
+  /* ========== Section Cards ========== */
+  section.card{
+    background:#fff;border:1px solid var(--line);border-radius:22px;
+    padding:32px;margin-top:28px;box-shadow:var(--shadow-md);scroll-margin-top:20px;
+  }
+  .sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  .sec-head h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-0.015em}
+  .sec-head h2 .num{
+    display:inline-block;background:var(--yellow);color:var(--brown);
+    font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;
+    margin-right:10px;vertical-align:middle;
+  }
+  .sec-head .why{
+    background:var(--cream-2);border:1px dashed var(--line-2);
+    padding:10px 14px;border-radius:12px;font-size:13px;color:var(--brown-2);
+    max-width:520px;
+  }
+  .sec-head .why b{color:var(--brown)}
+
+  /* ========== Screenshot Gallery ========== */
+  .phones{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
+  }
+  @media(max-width:900px){.phones{grid-template-columns:repeat(2,1fr)}}
+  .phone{
+    background:var(--cream-2);border:1px solid var(--line);
+    border-radius:24px;padding:14px 14px 18px;text-align:center;
+    transition:transform .2s ease, box-shadow .2s ease;cursor:pointer;
+  }
+  .phone:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--yellow)}
+  .phone-frame{
+    aspect-ratio: 9 / 19;
+    background:#fff;border-radius:18px;border:1px solid var(--line);
+    overflow:hidden;position:relative;display:flex;flex-direction:column;
+  }
+  .phone-frame::before{
+    content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:50px;height:5px;background:rgba(54,32,0,.25);border-radius:3px;z-index:5;
+  }
+  .phone-title{font-size:13px;font-weight:800;margin-top:12px}
+  .phone-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+  /* Mock screens (placeholders that look like the real app) */
+  .mock{flex:1;padding:34px 14px 14px;display:flex;flex-direction:column;gap:10px;font-size:11px}
+  .mock .mock-h{font-size:13px;font-weight:800;color:var(--brown)}
+  .mock .pill{
+    background:var(--yellow);color:var(--brown);font-weight:800;
+    border-radius:999px;padding:4px 10px;font-size:10px;display:inline-block;
+  }
+  .mock .bar{height:6px;background:var(--cream-2);border-radius:3px;overflow:hidden}
+  .mock .bar i{display:block;height:100%;background:var(--yellow);border-radius:3px}
+  .mock .card-row{background:var(--cream-2);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px}
+  .mock .card-row .av{width:24px;height:24px;border-radius:50%;background:var(--yellow)}
+  .mock .card-row .nm{font-weight:700;font-size:11px}
+  .mock .card-row .sc{margin-left:auto;font-weight:800;color:var(--brown-2)}
+  .mock .sentence{font-size:11px;line-height:1.6;color:var(--brown);font-weight:600}
+  .mock .sentence mark{background:#FFE69E;padding:0 2px;border-radius:3px}
+  .mock .sentence u{text-decoration:none;border-bottom:2px wavy #FFB800}
+  .mock .sentence s{text-decoration:none;background:rgba(255,93,93,.18);padding:0 2px;border-radius:3px;color:var(--brown)}
+  .mock .btn-mock{
+    margin-top:auto;background:var(--yellow);text-align:center;font-weight:800;
+    padding:10px;border-radius:14px;font-size:12px;box-shadow:var(--shadow-sm);
+  }
+  .mock .mascot{
+    width:60px;height:60px;border-radius:50%;background:#fff;border:2px solid var(--yellow);
+    margin:6px auto;display:flex;align-items:center;justify-content:center;
+  }
+  .mock .heart{display:inline-block;color:var(--red);font-size:14px;margin-right:2px}
+
+  /* ========== Pronunciation Feedback Demo ========== */
+  .demo-grid{display:grid;grid-template-columns:1fr 280px;gap:24px}
+  @media(max-width:860px){.demo-grid{grid-template-columns:1fr}}
+  .canvas-host{
+    background:var(--cream-2);border:1px solid var(--line);
+    border-radius:18px;padding:20px;position:relative;
+  }
+  #feedbackCanvas{display:block;width:100%;height:260px;border-radius:12px;background:#fff;border:1px solid var(--line)}
+  .feedback-toolbar{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  .btn{
+    background:var(--yellow);color:var(--brown);border:0;border-radius:12px;
+    padding:10px 16px;font-weight:800;font-size:13px;cursor:pointer;
+    box-shadow:var(--shadow-btn);transition:transform .08s;font-family:inherit;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(54,32,0,0.22)}
+  .btn.ghost{background:#fff;border:1px solid var(--line)}
+  .btn.danger{background:#FFE9E9;color:#b14b4b}
+  .seg{display:inline-flex;background:#fff;border-radius:12px;padding:4px;gap:2px;border:1px solid var(--line)}
+  .seg button{
+    background:transparent;border:0;padding:7px 12px;font-weight:700;font-size:12px;
+    color:var(--brown-2);border-radius:8px;cursor:pointer;font-family:inherit;
+  }
+  .seg button.on{background:var(--yellow);color:var(--brown);box-shadow:var(--shadow-sm)}
+
+  .feedback-side{display:flex;flex-direction:column;gap:14px}
+  .key-row{
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;
+  }
+  .key-row h4{margin:0 0 8px;font-size:13px;font-weight:800;color:var(--brown)}
+  .key-row .legend{display:flex;flex-direction:column;gap:8px}
+  .key-row .legend .it{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--brown-2)}
+  .key-row .legend .it .swatch{
+    width:32px;height:18px;border-radius:5px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .key-row .legend .it .swatch.dragged{background:#FFF1C8}
+  .key-row .legend .it .swatch.rushed{background:#D6E4F5}
+  .key-row .legend .it .swatch.missed{background:rgba(255,93,93,.18)}
+  .key-row .legend .it b{color:var(--brown)}
+  .key-row code{background:var(--cream-2);padding:2px 6px;border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--brown-2)}
+
+  .score-card{
+    background:var(--brown);color:#fff;border-radius:14px;padding:16px;
+  }
+  .score-card .total{font-size:36px;font-weight:800;letter-spacing:-0.02em;line-height:1}
+  .score-card .total small{font-size:14px;font-weight:600;color:#FFE69E;margin-left:2px}
+  .score-card .lbl{font-size:11px;color:#FFE69E;font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+  .score-card .breakdown{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px}
+  .score-card .breakdown div{display:flex;justify-content:space-between;color:#F2D9A8}
+  .score-card .breakdown b{color:#fff}
+
+  /* ========== MVI Interactive ========== */
+  .mvi-wrap{display:grid;grid-template-columns:1fr 360px;gap:24px}
+  @media(max-width:900px){.mvi-wrap{grid-template-columns:1fr}}
+  .scene{
+    background:var(--cream-2);border-radius:18px;border:1px solid var(--line);
+    padding:24px;min-height:480px;display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+  }
+  .scene-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+  .device{
+    width:280px;background:#fff;border-radius:32px;border:1px solid var(--line);
+    box-shadow:var(--shadow-md);padding:20px;display:flex;flex-direction:column;gap:12px;
+    min-height:380px;position:relative;
+  }
+  .device .topbar{
+    display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--brown-2);
+  }
+  .device .hearts{color:var(--red);font-size:14px;letter-spacing:1px}
+  .device .ref-sentence{
+    font-size:15px;line-height:1.6;font-weight:600;text-align:center;
+    padding:10px 0;color:var(--brown);
+  }
+  .device .ref-sentence mark{background:#FFE69E;padding:0 2px;border-radius:3px}
+  .device .countdown{
+    font-size:70px;font-weight:800;text-align:center;color:var(--yellow);
+    text-shadow:0 4px 0 rgba(54,32,0,.18);line-height:1;
+  }
+  .device .mic-btn{
+    margin:auto auto 8px;width:80px;height:80px;border-radius:50%;
+    background:var(--yellow);box-shadow:var(--shadow-btn);
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;
+  }
+  .device .mic-btn.rec{background:var(--red);color:#fff;animation:pulse 1s infinite ease-in-out}
+  @keyframes pulse{
+    0%,100%{transform:scale(1);box-shadow:var(--shadow-btn)}
+    50%{transform:scale(1.06);box-shadow:0 4px 0 rgba(54,32,0,.22),0 0 0 14px rgba(255,93,93,.15)}
+  }
+  .device .footer-tip{font-size:11px;color:var(--muted);text-align:center}
+  .device .analyzing{
+    text-align:center;color:var(--brown-2);font-size:13px;font-weight:700;
+    padding:20px 0;
+  }
+  .device .spinner{
+    width:42px;height:42px;border-radius:50%;border:4px solid var(--cream-2);
+    border-top-color:var(--yellow);margin:0 auto 14px;animation:spin .9s linear infinite;
+  }
+  .device .result-score{
+    font-size:48px;font-weight:800;text-align:center;color:var(--brown);
+    letter-spacing:-0.02em;line-height:1;margin-top:8px;
+  }
+  .device .result-score small{font-size:18px;color:var(--muted)}
+  .device .result-label{text-align:center;font-size:12px;color:var(--brown-2);font-weight:700;margin-top:4px}
+  .device .result-bars{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .device .result-bars .row{font-size:11px;display:flex;flex-direction:column;gap:3px}
+  .device .result-bars .row .top{display:flex;justify-content:space-between}
+  .device .result-bars .row .bar{height:6px;background:var(--cream-2);border-radius:3px;overflow:hidden}
+  .device .result-bars .row .bar i{display:block;height:100%;background:var(--yellow);border-radius:3px;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+  .device .heart-gained{
+    text-align:center;font-size:12px;color:var(--red);font-weight:700;margin-top:6px;
+  }
+  .device.fade-out{animation:fadeOut .3s ease forwards}
+  @keyframes fadeOut{to{opacity:.4;transform:scale(.97)}}
+
+  .timeline{
+    display:flex;justify-content:space-between;margin-top:16px;position:relative;
+    padding:0 6px;
+  }
+  .timeline::before{
+    content:"";position:absolute;left:30px;right:30px;top:14px;height:2px;
+    background:var(--line-2);
+  }
+  .tl-step{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;cursor:pointer;flex:1}
+  .tl-dot{
+    width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--line-2);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+    color:var(--muted);transition:all .2s;
+  }
+  .tl-step.done .tl-dot{background:var(--brown);border-color:var(--brown);color:var(--yellow)}
+  .tl-step.active .tl-dot{
+    background:var(--yellow);border-color:var(--yellow);color:var(--brown);
+    transform:scale(1.15);box-shadow:0 0 0 6px rgba(254,223,87,.3);
+  }
+  .tl-lbl{font-size:11px;font-weight:700;color:var(--brown-2);text-align:center;white-space:nowrap}
+
+  .mvi-panel{display:flex;flex-direction:column;gap:14px}
+  .code-card{
+    background:#26200E;color:#F5E9C8;border-radius:14px;padding:16px;
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;
+    line-height:1.6;overflow:auto;
+  }
+  .code-card .k{color:#FEDF57;font-weight:700}
+  .code-card .s{color:#9CD7A0}
+  .code-card .c{color:#8a7a4a;font-style:italic}
+  .code-card .v{color:#FF9D6C}
+  .code-card .p{color:#C0B89A}
+  .code-card .changed{
+    background:rgba(254,223,87,.16);border-left:3px solid var(--yellow);
+    margin:0 -16px;padding:1px 16px 1px 13px;
+    animation:flash 1s ease;
+  }
+  @keyframes flash{0%{background:rgba(254,223,87,.5)}100%{background:rgba(254,223,87,.16)}}
+  .code-card h5{margin:0 0 8px;color:var(--yellow);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}
+
+  .effect-card{
+    background:#fff;border:2px solid var(--blue);border-radius:14px;padding:14px;
+    display:none;
+  }
+  .effect-card.show{display:block;animation:slideIn .3s ease}
+  @keyframes slideIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .effect-card h5{margin:0 0 4px;font-size:11px;color:var(--blue);font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+  .effect-card .e-name{font-weight:800;font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--brown)}
+  .effect-card .e-note{font-size:12px;color:var(--brown-2);margin-top:4px}
+
+  footer{
+    margin-top:48px;padding:24px;text-align:center;color:var(--muted);font-size:12px;
+  }
+  footer code{background:var(--cream-2);padding:2px 6px;border-radius:6px;color:var(--brown-2)}
+
+  /* small util */
+  .row-flex{display:flex;align-items:center;gap:10px}
+  .tag{
+    background:var(--cream-2);color:var(--brown-2);font-size:11px;font-weight:700;
+    padding:3px 8px;border-radius:6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ========== HERO ========== -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">Android · Kotlin · Compose · MVI</span>
+        <h1>발음 평가를 <em>"읽힌다"</em>로 바꿨습니다.</h1>
+        <div class="lede">
+          AI가 뱉어내는 <code style="background:rgba(255,255,255,.55);padding:1px 6px;border-radius:6px">dragged / rushed / missed</code> 같은 JSON 텍스트를,
+          학습자가 <b>한 줄 보고 바로 이해할 수 있는 시각 피드백</b>으로 바꿨습니다. Compose Text 위에 Canvas를 정확한 좌표로 덧그려서요.
+        </div>
+        <div class="pitch-stats">
+          <div class="stat"><div class="v">8</div><div class="l">feature 모듈</div></div>
+          <div class="stat"><div class="v">MVI</div><div class="l">State · Intent · Effect 분리</div></div>
+          <div class="stat"><div class="v">3 종</div><div class="l">발음 피드백 시각화</div></div>
+          <div class="stat"><div class="v">100%</div><div class="l">Jetpack Compose</div></div>
+        </div>
+        <div class="quick-nav">
+          <a href="#shots" class="qn"><span class="dot"></span>화면 둘러보기</a>
+          <a href="#demo" class="qn"><span class="dot"></span>피드백 시각화 라이브</a>
+          <a href="#mvi" class="qn"><span class="dot"></span>MVI 흐름 체험</a>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center">
+        <div class="engmu">
+          <div class="ring"></div>
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <!-- 마스코트 engmu: 단순화 -->
+            <circle cx="50" cy="56" r="38" fill="#FEDF57" stroke="#362000" stroke-width="3"/>
+            <circle cx="38" cy="50" r="4" fill="#362000"/>
+            <circle cx="62" cy="50" r="4" fill="#362000"/>
+            <path d="M40,68 Q50,76 60,68" stroke="#362000" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="32" cy="62" rx="5" ry="3" fill="#FF9DB4" opacity=".7"/>
+            <ellipse cx="68" cy="62" rx="5" ry="3" fill="#FF9DB4" opacity=".7"/>
+            <path d="M20,28 L34,40 M80,28 L66,40" stroke="#362000" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 1. SCREENSHOTS ========== -->
+  <section class="card" id="shots">
+    <div class="sec-head">
+      <h2><span class="num">01</span>화면 둘러보기</h2>
+      <div class="why">학습 흐름을 따라가며 보세요. <b>홈 → 학습 세션 → 평가 결과 → 게임</b> 4개 화면.</div>
+    </div>
+    <div class="phones">
+
+      <div class="phone">
+        <div class="phone-frame">
+          <div class="mock">
+            <div class="row-flex" style="margin-top:8px"><span class="pill">DAY 12</span><span style="margin-left:auto;font-weight:800;color:var(--red)">🔥 12</span></div>
+            <div class="mock-h">안녕, 선민님 👋</div>
+            <div class="card-row"><div class="av"></div><div><div class="nm">오늘의 셰도잉</div><div style="font-size:10px;color:var(--muted)">Friends · S2E14</div></div><div class="sc">73%</div></div>
+            <div class="card-row"><div class="av"></div><div><div class="nm">즐겨찾는 문장</div><div style="font-size:10px;color:var(--muted)">3 sentences</div></div><div class="sc">▸</div></div>
+            <div class="bar"><i style="width:64%"></i></div>
+            <div style="font-size:10px;color:var(--muted)">주간 목표 64%</div>
+            <div class="btn-mock">계속하기</div>
+          </div>
+        </div>
+        <div class="phone-title">홈</div>
+        <div class="phone-sub">HomeScreen.kt</div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-frame">
+          <div class="mock">
+            <div class="row-flex" style="margin-top:8px"><span class="pill">SESSION 3/7</span><span style="margin-left:auto;font-size:10px;color:var(--muted)">00:18</span></div>
+            <div class="bar"><i style="width:42%"></i></div>
+            <div class="sentence" style="background:var(--cream-2);padding:12px;border-radius:10px;margin-top:6px">
+              "She <u>really</u> <s>loves</s> singing in the <mark>rain</mark>."
+            </div>
+            <div class="mascot" style="background:#FEDF57">🐥</div>
+            <div style="text-align:center;font-size:11px;color:var(--brown-2);font-weight:700">따라 말해보세요</div>
+            <div style="margin:auto auto 0;width:56px;height:56px;border-radius:50%;background:var(--red);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px">●</div>
+          </div>
+        </div>
+        <div class="phone-title">학습 세션</div>
+        <div class="phone-sub">StudySessionScreen.kt</div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-frame">
+          <div class="mock">
+            <div class="row-flex" style="margin-top:8px"><span class="pill" style="background:#2EB872;color:#fff">결과</span></div>
+            <div style="text-align:center;font-weight:800;font-size:28px;color:var(--brown)">87<span style="font-size:14px;color:var(--muted)">/100</span></div>
+            <div style="text-align:center;font-size:10px;color:var(--brown-2);font-weight:700">Great pronunciation!</div>
+            <div class="sentence" style="background:var(--cream-2);padding:10px;border-radius:10px;margin-top:4px">
+              She <u>really</u> <s>loves</s> singing in the <mark>rain</mark>.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px">
+              <div style="background:var(--cream-2);padding:6px;border-radius:8px"><b>Words</b> 92%</div>
+              <div style="background:var(--cream-2);padding:6px;border-radius:8px"><b>Prosody</b> 78%</div>
+              <div style="background:var(--cream-2);padding:6px;border-radius:8px"><b>Rhythm</b> 84%</div>
+              <div style="background:var(--cream-2);padding:6px;border-radius:8px"><b>Speed</b> 89%</div>
+            </div>
+            <div class="btn-mock">리포트 보기</div>
+          </div>
+        </div>
+        <div class="phone-title">평가 리포트</div>
+        <div class="phone-sub">StudyReportScreen.kt</div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-frame">
+          <div class="mock">
+            <div class="row-flex" style="margin-top:8px">
+              <span style="font-weight:800">LEVEL 4</span>
+              <span style="margin-left:auto"><span class="heart">♥</span><span class="heart">♥</span><span class="heart" style="color:var(--line-2)">♡</span></span>
+            </div>
+            <div style="background:#000;border-radius:10px;height:60px;display:flex;align-items:center;justify-content:center;color:#FEDF57;font-weight:800;font-size:13px">ROUND 2 / 5</div>
+            <div class="sentence" style="background:var(--cream-2);padding:10px;border-radius:10px">
+              The quick ____ fox jumps ____ the lazy dog.
+            </div>
+            <div class="mascot" style="background:#FF9DB4;font-size:22px">😍</div>
+            <div style="text-align:center;font-size:18px;font-weight:800;color:var(--yellow);text-shadow:0 2px 0 rgba(54,32,0,.18)">3</div>
+            <div style="text-align:center;font-size:10px;color:var(--muted)">곧 녹음이 시작돼요</div>
+          </div>
+        </div>
+        <div class="phone-title">게임 라운드</div>
+        <div class="phone-sub">GamePlayScreen.kt</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 2. PRONUNCIATION FEEDBACK DEMO ========== -->
+  <section class="card" id="demo">
+    <div class="sec-head">
+      <h2><span class="num">02</span>발음 피드백 시각화 · 라이브</h2>
+      <div class="why">
+        AI 평가 JSON의 <b>dragged / rushed / missed</b>가 문장 위 어디에 어떻게 그려지는지 직접 보세요.
+        실제 <b>AnnotatedSentenceView</b>의 <code>getBoundingBox(charIndex)</code> 좌표 로직을 그대로 Canvas로 옮겼습니다.
+      </div>
+    </div>
+
+    <div class="demo-grid">
+      <div>
+        <div class="canvas-host">
+          <canvas id="feedbackCanvas"></canvas>
+        </div>
+        <div class="feedback-toolbar">
+          <div class="seg" id="exSeg">
+            <button data-ex="0" class="on">예문 1</button>
+            <button data-ex="1">예문 2</button>
+            <button data-ex="2">예문 3</button>
+          </div>
+          <button class="btn" id="replayBtn">▶ 피드백 재생</button>
+          <button class="btn ghost" id="stripBtn">텍스트만</button>
+          <div class="tag" id="annStatusTag">대기 중</div>
+        </div>
+      </div>
+
+      <div class="feedback-side">
+        <div class="score-card">
+          <div class="lbl">Evaluation</div>
+          <div class="total" id="totalScore">87<small>/100</small></div>
+          <div class="breakdown" id="scoreBreakdown">
+            <div><span>Word Acc.</span><b>92</b></div>
+            <div><span>Prosody</span><b>78</b></div>
+            <div><span>Rhythm</span><b>84</b></div>
+            <div><span>Speed</span><b>89</b></div>
+          </div>
+        </div>
+        <div class="key-row">
+          <h4>WordFeedback → Annotation</h4>
+          <div class="legend">
+            <div class="it"><span class="swatch dragged"><span style="font-size:11px">∿</span></span><div><b>dragged</b> → <code>CURVE_LONG</code> · 노란 물결</div></div>
+            <div class="it"><span class="swatch rushed"><span style="font-size:11px">∨</span></span><div><b>rushed</b> → <code>CURVE_SHORT</code> · 파란 ∨</div></div>
+            <div class="it"><span class="swatch missed"></span><div><b>missed</b> → <code>HIGHLIGHT</code> · 빨간 배경</div></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">
+            <code>EvaluationAnnotationMapper.kt</code> 가 status 문자열을 색·모양 어노테이션으로 매핑합니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 3. MVI INTERACTIVE ========== -->
+  <section class="card" id="mvi">
+    <div class="sec-head">
+      <h2><span class="num">03</span>MVI 흐름 인터랙션 · 녹음부터 결과까지</h2>
+      <div class="why">
+        실제 <code>GamePlayContract.kt</code>의 State · Intent · Effect를 그대로 사용합니다.
+        타임라인을 클릭하거나 <b>다음 단계</b>로 사용자가 라운드를 한 바퀴 도는 동안 State가 어떻게 변하는지 보세요.
+      </div>
+    </div>
+
+    <div class="mvi-wrap">
+      <div class="scene">
+        <div class="scene-stage" id="sceneStage"></div>
+        <div class="timeline" id="timeline">
+          <div class="tl-step active" data-step="0"><div class="tl-dot">1</div><div class="tl-lbl">라운드 시작</div></div>
+          <div class="tl-step" data-step="1"><div class="tl-dot">2</div><div class="tl-lbl">카운트다운</div></div>
+          <div class="tl-step" data-step="2"><div class="tl-dot">3</div><div class="tl-lbl">녹음 중</div></div>
+          <div class="tl-step" data-step="3"><div class="tl-dot">4</div><div class="tl-lbl">평가 중</div></div>
+          <div class="tl-step" data-step="4"><div class="tl-dot">5</div><div class="tl-lbl">결과</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;align-items:center">
+          <button class="btn" id="nextStep">다음 단계 →</button>
+          <button class="btn ghost" id="resetStep">↺ 처음으로</button>
+          <div class="tag" id="intentTag" style="margin-left:auto">Intent: —</div>
+        </div>
+      </div>
+
+      <div class="mvi-panel">
+        <div class="code-card" id="stateCard">
+          <h5>GamePlayState (StateFlow)</h5>
+<pre id="stateCode" style="margin:0;font-family:inherit;white-space:pre"></pre>
+        </div>
+        <div class="effect-card" id="effectCard">
+          <h5>GamePlayEffect (Channel · one-shot)</h5>
+          <div class="e-name" id="effectName">—</div>
+          <div class="e-note" id="effectNote">UI가 단 한 번 소비</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Shadoweng · <code>com.bremenband.shadoweng</code> · Single-file portfolio · vanilla JS
+  </footer>
+</div>
+
+<script>
+/* ====================================================================
+ * Section 2: Pronunciation feedback Canvas
+ *   - Mirrors AnnotatedSentenceView.kt logic:
+ *     1) Layout text and store per-character bounding boxes
+ *     2) For each annotation, getBoundingBox(start) / getBoundingBox(end-1)
+ *     3) Compute mid line + centerX → draw Path overlay
+ *   - Mirrors EvaluationAnnotationMapper.kt mapping:
+ *     dragged → CURVE_LONG (0xFFFFB800)
+ *     rushed  → CURVE_SHORT (0xFF1565C0)
+ *     missed  → HIGHLIGHT (0x33FF5D5D)
+ * ==================================================================== */
+const EXAMPLES = [
+  {
+    sentence: "She really loves singing in the rain.",
+    feedback: [
+      { word: "really",  status: "dragged" },
+      { word: "loves",   status: "missed" },
+      { word: "singing", status: "rushed" },
+      { word: "rain",    status: "dragged" },
+    ],
+    scores: { total: 87, words: 92, prosody: 78, rhythm: 84, speed: 89 }
+  },
+  {
+    sentence: "I'd rather stay home tonight, honestly.",
+    feedback: [
+      { word: "rather",   status: "rushed" },
+      { word: "stay",     status: "good" },
+      { word: "tonight",  status: "dragged" },
+      { word: "honestly", status: "missed" },
+    ],
+    scores: { total: 72, words: 80, prosody: 65, rhythm: 71, speed: 74 }
+  },
+  {
+    sentence: "How long have you been waiting for the bus?",
+    feedback: [
+      { word: "long",    status: "dragged" },
+      { word: "you",     status: "rushed" },
+      { word: "waiting", status: "dragged" },
+      { word: "bus",     status: "good" },
+    ],
+    scores: { total: 81, words: 88, prosody: 74, rhythm: 79, speed: 85 }
+  },
+];
+
+const STATUS_COLOR = {
+  dragged: "#FFB800",
+  rushed:  "#1565C0",
+  missed:  "rgba(255,93,93,0.28)",
+};
+
+const canvas = document.getElementById("feedbackCanvas");
+const ctx = canvas.getContext("2d");
+
+let currentEx = 0;
+let stripMode = false;
+let runId = 0;
+let cachedLayout = null;
+
+function fitCanvas(){
+  const r = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = r.width * dpr;
+  canvas.height = r.height * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+/* Layout per-character bounding boxes (== TextLayoutResult.getBoundingBox) */
+function layoutText(text, fontPx, x0, y0, maxW){
+  ctx.font = "700 " + fontPx + "px Pretendard, system-ui";
+  ctx.textBaseline = "alphabetic";
+  const lineHeight = Math.round(fontPx * 1.7);
+  const spaceW = ctx.measureText(" ").width;
+  let x = x0, y = y0;
+  const boxes = [];
+  const words = text.split(" ");
+  for(let w=0; w<words.length; w++){
+    const word = words[w];
+    const wordW = ctx.measureText(word).width;
+    if(x + wordW > x0 + maxW && x !== x0){
+      x = x0; y += lineHeight;
+    }
+    let cx = x;
+    for(let i=0;i<word.length;i++){
+      const ch = word[i];
+      const chW = ctx.measureText(ch).width;
+      boxes.push({left:cx, right:cx+chW, top:y - fontPx*0.85, bottom:y + fontPx*0.20, ch});
+      cx += chW;
+    }
+    if(w !== words.length-1){
+      boxes.push({left:cx, right:cx+spaceW, top:y - fontPx*0.85, bottom:y + fontPx*0.20, ch:" "});
+      x = cx + spaceW;
+    } else {
+      x = cx;
+    }
+  }
+  return { boxes, lineHeight, fontPx, x0, y0, maxW };
+}
+
+function drawSentence(layout, text){
+  ctx.font = "700 " + layout.fontPx + "px Pretendard, system-ui";
+  ctx.fillStyle = "#362000";
+  ctx.textBaseline = "alphabetic";
+  for(let i=0;i<text.length;i++){
+    const b = layout.boxes[i];
+    ctx.fillText(text[i], b.left, b.bottom - layout.fontPx*0.18);
+  }
+}
+
+function indexOfWord(text, word){
+  const re = new RegExp("\\b" + word.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + "\\b");
+  const m = re.exec(text);
+  return m ? m.index : text.indexOf(word);
+}
+
+function annotationsFor(example){
+  // EvaluationResult.toAnnotations 와 동일한 매핑
+  const result = [];
+  example.feedback.forEach(f=>{
+    const word = f.word.trim().replace(/[.,!?"]/g,"");
+    const idx = indexOfWord(example.sentence, word);
+    if(idx === -1) return;
+    const end = idx + word.length;
+    if(f.status === "dragged")     result.push({startIndex:idx,endIndex:end,type:"CURVE_LONG", status:"dragged"});
+    else if(f.status === "rushed") result.push({startIndex:idx,endIndex:end,type:"CURVE_SHORT",status:"rushed"});
+    else if(f.status === "missed") result.push({startIndex:idx,endIndex:end,type:"HIGHLIGHT",  status:"missed"});
+  });
+  return result;
+}
+
+function easeOut(t){return 1 - Math.pow(1-t, 3)}
+
+function animFrame(durMs, fn){
+  return new Promise(res=>{
+    const t0 = performance.now();
+    (function step(now){
+      const t = Math.min(1,(now-t0)/durMs);
+      fn(easeOut(t));
+      if(t<1) requestAnimationFrame(step);
+      else res();
+    })(performance.now());
+  });
+}
+
+function drawHighlight(layout, ann, progress){
+  ctx.save();
+  ctx.fillStyle = STATUS_COLOR.missed;
+  for(let i=ann.startIndex; i<ann.endIndex; i++){
+    const b = layout.boxes[i]; if(!b) continue;
+    const w = (b.right-b.left) * progress;
+    ctx.fillRect(b.left, b.top-2, w, (b.bottom-b.top)+4);
+  }
+  ctx.restore();
+}
+
+function drawCurveLong(layout, ann, progress){
+  const sb = layout.boxes[ann.startIndex];
+  const eb = layout.boxes[ann.endIndex-1];
+  if(!sb || !eb) return;
+  const mid = sb.bottom + 6;
+  const left = sb.left, right = eb.right;
+  const amp = 5;
+  ctx.save();
+  ctx.strokeStyle = STATUS_COLOR.dragged;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  const steps = 80, end = Math.floor(steps*progress);
+  for(let i=0;i<=end;i++){
+    const t = i/steps;
+    const x = left + (right-left)*t;
+    const y = mid + Math.sin(t * Math.PI * 3) * amp;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCurveShort(layout, ann, progress){
+  const sb = layout.boxes[ann.startIndex];
+  const eb = layout.boxes[ann.endIndex-1];
+  if(!sb || !eb) return;
+  const mid = sb.bottom + 8;
+  const cx = (sb.left + eb.right)/2;
+  const half = Math.max(8, (eb.right-sb.left)/3);
+  ctx.save();
+  ctx.strokeStyle = STATUS_COLOR.rushed;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  if(progress <= .5){
+    const p = progress/.5;
+    ctx.moveTo(cx-half, mid-3);
+    ctx.lineTo(cx-half + (half)*p, mid-3 + (6)*p);
+  } else {
+    ctx.moveTo(cx-half, mid-3);
+    ctx.lineTo(cx, mid+3);
+    const p = (progress-.5)/.5;
+    ctx.lineTo(cx + half*p, mid+3 - 6*p);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBoundingBoxesPeek(layout, ann, progress){
+  // brief flash showing getBoundingBox call (start=red, end=blue)
+  const sb = layout.boxes[ann.startIndex];
+  const eb = layout.boxes[ann.endIndex-1];
+  if(!sb || !eb) return;
+  ctx.save();
+  ctx.globalAlpha = progress < .5 ? progress*2 : (1-progress)*2;
+  ctx.strokeStyle = "#FF5D5D"; ctx.lineWidth = 1.2; ctx.setLineDash([3,3]);
+  ctx.strokeRect(sb.left-1, sb.top-1, sb.right-sb.left+2, sb.bottom-sb.top+2);
+  ctx.strokeStyle = "#1565C0";
+  ctx.strokeRect(eb.left-1, eb.top-1, eb.right-eb.left+2, eb.bottom-eb.top+2);
+  ctx.restore();
+}
+
+function clearStage(){
+  const r = canvas.getBoundingClientRect();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#fff"; ctx.fillRect(0,0,r.width,r.height);
+}
+
+function setStatusTag(msg){
+  document.getElementById("annStatusTag").textContent = msg;
+}
+
+async function playFeedback(){
+  const my = ++runId;
+  const ex = EXAMPLES[currentEx];
+  fitCanvas();
+  const r = canvas.getBoundingClientRect();
+  clearStage();
+  const layout = layoutText(ex.sentence, 22, 28, 60, r.width - 56);
+  cachedLayout = { layout, sentence: ex.sentence };
+  drawSentence(layout, ex.sentence);
+  setStatusTag("문장 렌더 완료 · getBoundingBox 준비");
+  await new Promise(r=>setTimeout(r,500));
+  if(my!==runId) return;
+  if(stripMode){ setStatusTag("텍스트만 모드"); return; }
+
+  // update side card scores
+  document.getElementById("totalScore").innerHTML = `${ex.scores.total}<small>/100</small>`;
+  document.getElementById("scoreBreakdown").innerHTML = `
+    <div><span>Word Acc.</span><b>${ex.scores.words}</b></div>
+    <div><span>Prosody</span><b>${ex.scores.prosody}</b></div>
+    <div><span>Rhythm</span><b>${ex.scores.rhythm}</b></div>
+    <div><span>Speed</span><b>${ex.scores.speed}</b></div>
+  `;
+
+  const anns = annotationsFor(ex);
+  for(let i=0;i<anns.length;i++){
+    if(my!==runId) return;
+    const ann = anns[i];
+    setStatusTag(`(${i+1}/${anns.length}) ${ann.status} → getBoundingBox(${ann.startIndex}, ${ann.endIndex-1})`);
+    // flash bounding boxes once
+    await animFrame(420, p=>{
+      clearStage();
+      drawSentence(layout, ex.sentence);
+      // already-drawn annotations stay
+      for(let j=0;j<i;j++) drawAnnFinal(layout, anns[j]);
+      drawBoundingBoxesPeek(layout, ann, p);
+    });
+    if(my!==runId) return;
+    // draw the actual annotation
+    await animFrame(700, p=>{
+      clearStage();
+      drawSentence(layout, ex.sentence);
+      for(let j=0;j<i;j++) drawAnnFinal(layout, anns[j]);
+      drawAnnByType(layout, ann, p);
+    });
+  }
+  // final
+  if(my!==runId) return;
+  clearStage();
+  // missed under text? we draw highlights first (under), then redraw text, then curves above
+  ctx.save();
+  anns.filter(a=>a.type==="HIGHLIGHT").forEach(a=>drawHighlight(layout,a,1));
+  ctx.restore();
+  drawSentence(layout, ex.sentence);
+  anns.filter(a=>a.type!=="HIGHLIGHT").forEach(a=>drawAnnByType(layout, a, 1));
+  setStatusTag(`완료 · ${anns.length}개 어노테이션 렌더`);
+}
+
+function drawAnnByType(layout, ann, p){
+  if(ann.type === "HIGHLIGHT") drawHighlight(layout, ann, p);
+  else if(ann.type === "CURVE_LONG") drawCurveLong(layout, ann, p);
+  else if(ann.type === "CURVE_SHORT") drawCurveShort(layout, ann, p);
+}
+function drawAnnFinal(layout, ann){ drawAnnByType(layout, ann, 1); }
+
+document.getElementById("exSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  document.querySelectorAll("#exSeg button").forEach(x=>x.classList.toggle("on", x===b));
+  currentEx = +b.dataset.ex; stripMode = false;
+  playFeedback();
+});
+document.getElementById("replayBtn").addEventListener("click", ()=>{ stripMode = false; playFeedback(); });
+document.getElementById("stripBtn").addEventListener("click", ()=>{
+  stripMode = true;
+  fitCanvas();
+  const ex = EXAMPLES[currentEx];
+  const r = canvas.getBoundingClientRect();
+  clearStage();
+  const layout = layoutText(ex.sentence, 22, 28, 60, r.width - 56);
+  drawSentence(layout, ex.sentence);
+  setStatusTag("텍스트만 (어노테이션 제거)");
+});
+window.addEventListener("resize", ()=>{ if(cachedLayout) playFeedback(); });
+setTimeout(playFeedback, 200);
+
+/* ====================================================================
+ * Section 3: MVI Interactive
+ *   - GamePlayContract.kt 의 실제 State / Intent / Effect 사용
+ *   - 5 단계 시나리오: 시작 → 카운트다운 → 녹음 → 평가 → 결과
+ * ==================================================================== */
+const STEPS = [
+  {
+    label: "라운드 시작",
+    intent: "loadRound(level=4, round=2)",
+    effect: null,
+    state: {
+      level: 4, round: 2, hearts: 2, currentScore: 0.0,
+      sentence: '"The quick brown fox jumps over the lazy dog."',
+      maskedSentence: '"The quick ____ fox jumps ____ the lazy dog."',
+      referenceAudioUrl: '".../round2.mp3"',
+      engmuMood: "NEUTRAL",
+      isRecording: false, isAnalyzing: false, isPlayingAudio: false,
+      countdown: null, showRoundModal: false, lastRoundScore: 0.0
+    },
+    changed: ["level","round","hearts","sentence","maskedSentence"],
+    note: "API 응답을 받아 State 초기 세팅",
+    deviceMode: "idle"
+  },
+  {
+    label: "카운트다운",
+    intent: "GamePlayIntent.StartCountdown",
+    effect: null,
+    state: {
+      level: 4, round: 2, hearts: 2, currentScore: 0.0,
+      sentence: '"The quick brown fox jumps over the lazy dog."',
+      maskedSentence: '"The quick ____ fox jumps ____ the lazy dog."',
+      referenceAudioUrl: '".../round2.mp3"',
+      engmuMood: "INTERESTED",
+      isRecording: false, isAnalyzing: false, isPlayingAudio: false,
+      countdown: 3, showRoundModal: false, lastRoundScore: 0.0
+    },
+    changed: ["countdown","engmuMood"],
+    note: "사용자가 마이크 버튼 탭 → _state.update { copy(countdown=3) }",
+    deviceMode: "countdown"
+  },
+  {
+    label: "녹음 중",
+    intent: "(coroutine) countdown 0 → AudioRecorder.start()",
+    effect: null,
+    state: {
+      level: 4, round: 2, hearts: 2, currentScore: 0.0,
+      sentence: '"The quick brown fox jumps over the lazy dog."',
+      maskedSentence: '"The quick ____ fox jumps ____ the lazy dog."',
+      referenceAudioUrl: '".../round2.mp3"',
+      engmuMood: "EXCITED",
+      isRecording: true, isAnalyzing: false, isPlayingAudio: false,
+      countdown: null, showRoundModal: false, lastRoundScore: 0.0
+    },
+    changed: ["isRecording","engmuMood","countdown"],
+    note: "isRecording=true → UI는 빨간 펄스 마이크",
+    deviceMode: "recording"
+  },
+  {
+    label: "평가 중",
+    intent: "GamePlayIntent.StopRecording",
+    effect: null,
+    state: {
+      level: 4, round: 2, hearts: 2, currentScore: 0.0,
+      sentence: '"The quick brown fox jumps over the lazy dog."',
+      maskedSentence: '"The quick ____ fox jumps ____ the lazy dog."',
+      referenceAudioUrl: '".../round2.mp3"',
+      engmuMood: "NEUTRAL",
+      isRecording: false, isAnalyzing: true, isPlayingAudio: false,
+      countdown: null, showRoundModal: false, lastRoundScore: 0.0
+    },
+    changed: ["isRecording","isAnalyzing","engmuMood"],
+    note: "녹음 종료 → 서버로 업로드 → AI 평가 대기",
+    deviceMode: "analyzing"
+  },
+  {
+    label: "결과",
+    intent: "(server response) → showRoundModal=true",
+    effect: { name: "NavigateToResult(finalResult, hearts=3, prevBest=0.82)", note: "마지막 라운드면 Channel 로 일회성 전송 → 결과 화면 이동" },
+    state: {
+      level: 4, round: 2, hearts: 3, currentScore: 0.91,
+      sentence: '"The quick brown fox jumps over the lazy dog."',
+      maskedSentence: '"The quick ____ fox jumps ____ the lazy dog."',
+      referenceAudioUrl: '".../round2.mp3"',
+      engmuMood: "LOVE",
+      isRecording: false, isAnalyzing: false, isPlayingAudio: false,
+      countdown: null,
+      showRoundModal: true, lastRoundScore: 0.91, lastRoundHeartGained: true
+    },
+    changed: ["hearts","currentScore","engmuMood","isAnalyzing","showRoundModal","lastRoundScore","lastRoundHeartGained"],
+    note: "0.91 → 하트 +1. 모달 노출 후 다음 라운드 또는 NavigateToResult Effect.",
+    deviceMode: "result"
+  },
+];
+
+let stepIdx = 0;
+
+function renderStateCode(stepIdx){
+  const s = STEPS[stepIdx].state;
+  const ch = new Set(STEPS[stepIdx].changed);
+  const fields = [
+    ["level", s.level],
+    ["round", s.round],
+    ["hearts", s.hearts],
+    ["currentScore", s.currentScore],
+    ["sentence", s.sentence],
+    ["maskedSentence", s.maskedSentence],
+    ["referenceAudioUrl", s.referenceAudioUrl],
+    ["engmuMood", "EngmuMood." + s.engmuMood],
+    ["isRecording", s.isRecording],
+    ["isAnalyzing", s.isAnalyzing],
+    ["isPlayingAudio", s.isPlayingAudio],
+    ["countdown", s.countdown === null ? "null" : s.countdown],
+    ["showRoundModal", s.showRoundModal],
+    ["lastRoundScore", s.lastRoundScore],
+  ];
+  let html = '<span class="k">data class</span> <span class="v">GamePlayState</span>(\n';
+  fields.forEach(([k,v],i)=>{
+    const isStr = typeof v === "string" && v.startsWith('"');
+    const isEnum = typeof v === "string" && v.startsWith("EngmuMood");
+    const isBool = v === true || v === false;
+    let vRender;
+    if(isStr) vRender = `<span class="s">${escape(v)}</span>`;
+    else if(isEnum) vRender = `<span class="v">${escape(v)}</span>`;
+    else if(v === "null") vRender = `<span class="k">null</span>`;
+    else if(isBool) vRender = `<span class="k">${v}</span>`;
+    else vRender = `<span class="v">${escape(String(v))}</span>`;
+    const line = `    <span class="p">${k}</span> = ${vRender}${i<fields.length-1 ? "," : ""}`;
+    if(ch.has(k)) html += `<span class="changed">${line}</span>\n`;
+    else html += line + "\n";
+  });
+  html += ")";
+  document.getElementById("stateCode").innerHTML = html;
+}
+function escape(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+
+function renderTimeline(){
+  document.querySelectorAll(".tl-step").forEach((el,i)=>{
+    el.classList.remove("active","done");
+    if(i<stepIdx) el.classList.add("done");
+    if(i===stepIdx) el.classList.add("active");
+  });
+}
+
+function renderDevice(){
+  const step = STEPS[stepIdx];
+  const stage = document.getElementById("sceneStage");
+  const s = step.state;
+  const heartIcons = "♥".repeat(s.hearts) + "♡".repeat(Math.max(0,3-s.hearts));
+  const baseHeader = `
+    <div class="topbar">
+      <div>LEVEL ${s.level}</div>
+      <div class="hearts">${heartIcons}</div>
+    </div>
+  `;
+  let body = "";
+  if(step.deviceMode === "idle"){
+    body = `
+      ${baseHeader}
+      <div class="ref-sentence">${s.maskedSentence.replace(/"/g,"")}</div>
+      <div style="text-align:center;font-size:11px;color:var(--muted)">Round ${s.round} / 5</div>
+      <div class="mic-btn">🎙</div>
+      <div class="footer-tip">탭해서 녹음 시작</div>
+    `;
+  } else if(step.deviceMode === "countdown"){
+    body = `
+      ${baseHeader}
+      <div class="ref-sentence">${s.maskedSentence.replace(/"/g,"")}</div>
+      <div class="countdown">${s.countdown}</div>
+      <div class="footer-tip">곧 녹음이 시작돼요</div>
+    `;
+  } else if(step.deviceMode === "recording"){
+    body = `
+      ${baseHeader}
+      <div class="ref-sentence">${s.maskedSentence.replace(/"/g,"")}</div>
+      <div class="mic-btn rec">●</div>
+      <div class="footer-tip">따라 말해보세요</div>
+    `;
+  } else if(step.deviceMode === "analyzing"){
+    body = `
+      ${baseHeader}
+      <div class="analyzing">
+        <div class="spinner"></div>
+        AI 가 발음을 분석하는 중...
+      </div>
+    `;
+  } else if(step.deviceMode === "result"){
+    body = `
+      ${baseHeader}
+      <div class="result-label">ROUND ${s.round} SCORE</div>
+      <div class="result-score">${Math.round(s.lastRoundScore*100)}<small>/100</small></div>
+      ${s.lastRoundHeartGained ? '<div class="heart-gained">+1 ♥ 획득!</div>' : ''}
+      <div class="result-bars">
+        <div class="row"><div class="top"><span>Word Acc.</span><b>92</b></div><div class="bar"><i style="width:92%"></i></div></div>
+        <div class="row"><div class="top"><span>Prosody</span><b>89</b></div><div class="bar"><i style="width:89%"></i></div></div>
+        <div class="row"><div class="top"><span>Speed</span><b>91</b></div><div class="bar"><i style="width:91%"></i></div></div>
+      </div>
+    `;
+  }
+  stage.innerHTML = `<div class="device">${body}</div>`;
+}
+
+function renderEffect(){
+  const step = STEPS[stepIdx];
+  const card = document.getElementById("effectCard");
+  if(step.effect){
+    card.classList.add("show");
+    document.getElementById("effectName").textContent = step.effect.name;
+    document.getElementById("effectNote").textContent = step.effect.note;
+  } else {
+    card.classList.remove("show");
+  }
+}
+
+function renderIntent(){
+  const step = STEPS[stepIdx];
+  document.getElementById("intentTag").innerHTML = `<b>Intent:</b> ${step.intent} · ${step.note}`;
+}
+
+function gotoStep(i){
+  stepIdx = Math.max(0, Math.min(STEPS.length-1, i));
+  renderTimeline();
+  renderDevice();
+  renderStateCode(stepIdx);
+  renderEffect();
+  renderIntent();
+}
+
+document.getElementById("nextStep").addEventListener("click", ()=>{
+  if(stepIdx >= STEPS.length-1) gotoStep(0);
+  else gotoStep(stepIdx+1);
+});
+document.getElementById("resetStep").addEventListener("click", ()=>gotoStep(0));
+document.querySelectorAll(".tl-step").forEach(el=>{
+  el.addEventListener("click", ()=>gotoStep(+el.dataset.step));
+});
+
+gotoStep(0);
+</script>
+</body>
+</html>

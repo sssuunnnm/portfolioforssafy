@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shadoweng · FE 아키텍처 인터랙티브</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --yellow:#FEDF57;
+    --yellow-soft:#FFF4B8;
+    --brown:#362000;
+    --brown-soft:#5A3A0E;
+    --cream:#FAF9F6;
+    --cream-2:#F5F5F3;
+    --line:#EEEAE0;
+    --line-2:#E0DACA;
+    --muted:#888888;
+    --muted-2:#AAAAAA;
+    --red:#FF5D5D;
+    --green:#2EB872;
+    --blue:#3A86FF;
+    --purple:#8E5BFF;
+    --shadow: 0 2px 0 rgba(54,32,0,0.08), 0 8px 24px rgba(54,32,0,0.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--cream);
+    color:var(--brown);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 96px}
+  header.hero{
+    background:var(--yellow);
+    border-radius:24px;
+    padding:36px 32px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::after{
+    content:"";
+    position:absolute;right:-60px;top:-60px;width:240px;height:240px;
+    background:radial-gradient(circle,#FFF1A0 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .brand{font-size:13px;letter-spacing:.18em;font-weight:700;color:var(--brown-soft);text-transform:uppercase}
+  h1{margin:8px 0 4px;font-size:34px;font-weight:800;letter-spacing:-0.02em}
+  .tagline{font-size:15px;color:var(--brown-soft);max-width:640px}
+  .chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    background:rgba(54,32,0,0.08);color:var(--brown);
+    padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;
+  }
+
+  section.card{
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:28px;margin-top:28px;box-shadow:var(--shadow);
+  }
+  section.card h2{
+    margin:0 0 4px;font-size:22px;font-weight:800;letter-spacing:-0.01em;
+    display:flex;align-items:center;gap:10px;
+  }
+  section.card h2 .badge{
+    background:var(--yellow);color:var(--brown);font-size:11px;
+    font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.04em;
+  }
+  section.card p.lede{margin:0 0 22px;color:var(--muted);font-size:14px}
+
+  /* ============ Section 1: Feature Tree ============ */
+  .tree-grid{
+    display:grid;grid-template-columns:280px 1fr;gap:24px;
+  }
+  @media(max-width:760px){.tree-grid{grid-template-columns:1fr}}
+  .domain-list{display:flex;flex-direction:column;gap:8px}
+  .domain-btn{
+    text-align:left;border:1px solid var(--line);background:var(--cream-2);
+    border-radius:14px;padding:14px 16px;cursor:pointer;font:inherit;
+    color:var(--brown);transition:all .16s ease;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .domain-btn:hover{transform:translateY(-1px);border-color:var(--line-2)}
+  .domain-btn.active{
+    background:var(--yellow);border-color:var(--yellow);
+    box-shadow:0 4px 0 rgba(54,32,0,0.12);
+  }
+  .domain-name{font-weight:700;font-size:15px}
+  .domain-meta{font-size:11px;color:var(--brown-soft);opacity:.7;font-weight:600}
+  .domain-btn.active .domain-meta{opacity:.85}
+
+  .layers{display:flex;flex-direction:column;gap:10px;min-height:380px}
+  .layer{
+    border:1px solid var(--line);border-radius:14px;background:var(--cream-2);
+    overflow:hidden;
+  }
+  .layer-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 16px;cursor:pointer;user-select:none;
+  }
+  .layer-tag{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;
+  }
+  .layer-dot{width:10px;height:10px;border-radius:50%}
+  .layer-count{font-size:12px;color:var(--muted);font-weight:600}
+  .layer-files{
+    max-height:0;overflow:hidden;transition:max-height .35s ease;
+    background:#fff;border-top:1px solid transparent;
+  }
+  .layer.open .layer-files{max-height:600px;border-top-color:var(--line)}
+  .layer.open .layer-head .caret{transform:rotate(90deg)}
+  .caret{
+    display:inline-block;width:10px;height:10px;border-right:2px solid var(--brown-soft);
+    border-bottom:2px solid var(--brown-soft);transform:rotate(-45deg);
+    transition:transform .2s ease;margin-left:4px;
+  }
+  .file{
+    padding:9px 16px 9px 36px;font-size:13px;color:var(--brown-soft);
+    border-top:1px dashed var(--line);font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    position:relative;
+  }
+  .file:first-child{border-top:0}
+  .file::before{
+    content:"";position:absolute;left:18px;top:14px;width:8px;height:8px;
+    border-left:2px solid var(--line-2);border-bottom:2px solid var(--line-2);
+  }
+  .file b{color:var(--brown);font-weight:700}
+  .empty-layer{padding:14px 16px;font-size:12px;color:var(--muted);font-style:italic}
+
+  /* color per layer */
+  .lay-api{--lc:#3A86FF}
+  .lay-dto{--lc:#5BA8FF}
+  .lay-data{--lc:#8E5BFF}
+  .lay-domain{--lc:#2EB872}
+  .lay-mapper{--lc:#F0A03A}
+  .lay-presentation{--lc:#FF5D5D}
+  .lay-repository{--lc:#1D9BB8}
+  .lay-util{--lc:#888888}
+  .layer .layer-dot{background:var(--lc)}
+  .layer.open{border-color:var(--lc)}
+  .layer.open .layer-head{background:color-mix(in srgb, var(--lc) 8%, transparent)}
+
+  /* ============ Section 2: MVI diagram ============ */
+  .mvi-stage{
+    position:relative;height:480px;background:var(--cream-2);
+    border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  }
+  .mvi-svg{position:absolute;inset:0;width:100%;height:100%}
+  .node{
+    position:absolute;border-radius:14px;background:#fff;border:2px solid var(--line);
+    padding:12px 14px;min-width:150px;box-shadow:0 4px 0 rgba(54,32,0,0.06);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .node h4{margin:0 0 4px;font-size:13px;font-weight:800;letter-spacing:.02em}
+  .node .sub{font-size:11px;color:var(--muted);font-weight:600}
+  .node.state{border-color:#2EB872;background:#F0FBF5;left:32px;top:200px}
+  .node.ui{border-color:#FEDF57;background:#FFFBE0;left:280px;top:60px}
+  .node.intent{border-color:#FF5D5D;background:#FFF1F1;left:520px;top:200px}
+  .node.vm{border-color:#8E5BFF;background:#F6EEFF;left:760px;top:200px}
+  .node.effect{border-color:#3A86FF;background:#EAF2FF;left:520px;top:380px}
+  .node.pulse{
+    transform:translateY(-4px) scale(1.04);
+    box-shadow:0 8px 0 rgba(54,32,0,0.1);
+  }
+  .node ul{margin:6px 0 0;padding:0;list-style:none;font-size:11px;color:var(--brown-soft)}
+  .node ul li{padding:2px 0;font-family:"JetBrains Mono",ui-monospace,monospace}
+  .node.state ul li b,.node.intent ul li b,.node.effect ul li b{color:var(--brown);font-weight:700}
+
+  .mvi-controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  .btn{
+    background:var(--yellow);color:var(--brown);border:0;border-radius:12px;
+    padding:10px 16px;font-weight:800;font-size:13px;cursor:pointer;
+    box-shadow:0 3px 0 rgba(54,32,0,0.18);transition:transform .08s;
+    font-family:inherit;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(54,32,0,0.18)}
+  .btn.ghost{background:#fff;border:1px solid var(--line)}
+  .step-tag{
+    font-size:12px;color:var(--muted);font-weight:600;margin-left:4px;
+    flex:1;text-align:right;
+  }
+  .step-tag b{color:var(--brown)}
+
+  /* ============ Section 3: Canvas sim ============ */
+  .canvas-stage{
+    position:relative;height:340px;background:#fff;
+    border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  }
+  #canvasSim{display:block;width:100%;height:100%}
+  .canvas-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+  .seg{
+    display:inline-flex;background:var(--cream-2);border-radius:12px;padding:4px;gap:2px;
+    border:1px solid var(--line);
+  }
+  .seg button{
+    background:transparent;border:0;padding:8px 12px;font-weight:700;font-size:12px;
+    color:var(--brown-soft);border-radius:8px;cursor:pointer;font-family:inherit;
+  }
+  .seg button.on{background:var(--yellow);color:var(--brown);box-shadow:0 2px 0 rgba(54,32,0,0.12)}
+  .legend{
+    display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--brown-soft);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+  .step-log{
+    margin-top:14px;background:var(--cream-2);border:1px dashed var(--line);
+    border-radius:12px;padding:14px 16px;font-family:"JetBrains Mono",ui-monospace,monospace;
+    font-size:12px;color:var(--brown-soft);min-height:80px;white-space:pre-wrap;
+  }
+  .step-log b{color:var(--brown)}
+
+  footer{
+    margin-top:48px;padding:24px;text-align:center;color:var(--muted);font-size:12px;
+  }
+  footer code{
+    background:var(--cream-2);padding:2px 6px;border-radius:6px;color:var(--brown-soft);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="brand">Shadoweng · FE Architecture</div>
+    <h1>따라 말할수록, 자연스러운 영어</h1>
+    <div class="tagline">
+      Android Compose 기반 영어 셰도잉 앱의 프론트엔드 구조를 인터랙티브하게 풀어봅니다.
+      feature 도메인 트리, MVI 단방향 데이터 흐름, Canvas 오버레이의 좌표 계산까지 — 코드를 그대로 시각화했습니다.
+    </div>
+    <div class="chips">
+      <div class="chip">Kotlin · Jetpack Compose</div>
+      <div class="chip">MVI · StateFlow + Channel</div>
+      <div class="chip">Hilt · Retrofit · Coroutines</div>
+      <div class="chip">Feature-first Modularization</div>
+    </div>
+  </header>
+
+  <!-- ============ Section 1 ============ -->
+  <section class="card">
+    <h2><span class="badge">01</span> Feature 도메인 구조</h2>
+    <p class="lede">8개 feature 도메인을 layer별로 분리. 도메인을 선택하면 각 layer가 펼쳐지며 핵심 파일이 드러납니다.</p>
+    <div class="tree-grid">
+      <div class="domain-list" id="domainList"></div>
+      <div class="layers" id="layers"></div>
+    </div>
+  </section>
+
+  <!-- ============ Section 2 ============ -->
+  <section class="card">
+    <h2><span class="badge">02</span> MVI 단방향 흐름 · GamePlayContract</h2>
+    <p class="lede">State → UI → Intent → ViewModel → (State|Effect). State는 StateFlow, Effect는 Channel로 분리되어 일회성 이벤트가 화면 회전에도 누수되지 않습니다.</p>
+    <div class="mvi-stage" id="mviStage">
+      <svg class="mvi-svg" id="mviSvg" viewBox="0 0 960 480" preserveAspectRatio="none">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5A3A0E"/>
+          </marker>
+          <marker id="arrow-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#FEDF57" stroke="#362000" stroke-width="0.5"/>
+          </marker>
+        </defs>
+        <!-- edges -->
+        <path id="edge-1" d="M180,240 C220,140 240,100 280,100" stroke="#C9C0AB" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+        <path id="edge-2" d="M430,100 C470,100 500,140 540,220" stroke="#C9C0AB" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+        <path id="edge-3" d="M670,240 C710,240 740,240 760,240" stroke="#C9C0AB" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+        <path id="edge-4a" d="M810,210 C720,160 460,160 230,210" stroke="#C9C0AB" stroke-width="2.5" fill="none" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+        <path id="edge-4b" d="M820,290 C760,330 700,360 640,400" stroke="#C9C0AB" stroke-width="2.5" fill="none" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+        <text x="220" y="160" font-size="11" fill="#888" font-family="Pretendard">collect</text>
+        <text x="470" y="135" font-size="11" fill="#888" font-family="Pretendard">onIntent</text>
+        <text x="700" y="230" font-size="11" fill="#888" font-family="Pretendard">handle</text>
+        <text x="380" y="180" font-size="11" fill="#888" font-family="Pretendard">_state.update</text>
+        <text x="690" y="380" font-size="11" fill="#888" font-family="Pretendard">_effect.send</text>
+      </svg>
+
+      <div class="node state" data-step="1">
+        <h4 style="color:#2EB872">GamePlayState</h4>
+        <div class="sub">data class · StateFlow</div>
+        <ul>
+          <li><b>level</b>, <b>round</b>, hearts</li>
+          <li><b>sentence</b>, maskedSentence</li>
+          <li>isRecording, isAnalyzing</li>
+          <li><b>countdown</b>, engmuMood</li>
+        </ul>
+      </div>
+      <div class="node ui" data-step="2">
+        <h4 style="color:#8a6f00">GamePlayScreen</h4>
+        <div class="sub">@Composable · UI</div>
+        <ul>
+          <li>collectAsStateWithLifecycle</li>
+          <li>render(state)</li>
+          <li>onClick → onIntent(...)</li>
+        </ul>
+      </div>
+      <div class="node intent" data-step="3">
+        <h4 style="color:#c83838">GamePlayIntent</h4>
+        <div class="sub">sealed class · user action</div>
+        <ul>
+          <li><b>StartCountdown</b></li>
+          <li><b>StopRecording</b></li>
+          <li>RetryCountdown</li>
+          <li>SetAudioPlaying(isPlaying)</li>
+          <li>DismissVoiceModal</li>
+        </ul>
+      </div>
+      <div class="node vm" data-step="4">
+        <h4 style="color:#6a3ed1">GamePlayViewModel</h4>
+        <div class="sub">@HiltViewModel</div>
+        <ul>
+          <li>onIntent(intent)</li>
+          <li>_state.update { ... }</li>
+          <li>_effect.send( ... )</li>
+        </ul>
+      </div>
+      <div class="node effect" data-step="5">
+        <h4 style="color:#1d6ed8">GamePlayEffect</h4>
+        <div class="sub">sealed class · Channel</div>
+        <ul>
+          <li><b>NavigateToResult</b>(result)</li>
+          <li>NavigateToLeaderboard</li>
+          <li>ShowError(message)</li>
+          <li>ShowVoiceNotRecognized</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mvi-controls">
+      <button class="btn" id="mviPlay">▶ 흐름 재생</button>
+      <button class="btn ghost" id="mviReset">↺ 리셋</button>
+      <div class="step-tag" id="mviStepTag">User taps <b>'녹음 시작'</b> · Click <b>흐름 재생</b></div>
+    </div>
+  </section>
+
+  <!-- ============ Section 3 ============ -->
+  <section class="card">
+    <h2><span class="badge">03</span> AnnotatedSentenceView · Canvas 오버레이</h2>
+    <p class="lede">
+      문장은 Text로 그리고, 발음 화살표/억양 곡선은 그 위의 Canvas에 덧그립니다.
+      핵심은 <code style="background:var(--cream-2);padding:2px 6px;border-radius:6px;font-family:inherit">TextLayoutResult.getBoundingBox(charIndex)</code> 로
+      글자의 픽셀 좌표를 얻어 그 위에 Path를 그린다는 점.
+    </p>
+    <div class="canvas-stage">
+      <canvas id="canvasSim"></canvas>
+    </div>
+    <div class="canvas-controls">
+      <div class="seg" id="annSeg">
+        <button data-ann="ARROW_UP" class="on">↗ ARROW_UP</button>
+        <button data-ann="ARROW_DOWN">↘ ARROW_DOWN</button>
+        <button data-ann="CURVE_LONG">∿ CURVE_LONG</button>
+        <button data-ann="HIGHLIGHT">▮ HIGHLIGHT</button>
+      </div>
+      <button class="btn" id="canvasReplay">▶ 다시 재생</button>
+    </div>
+    <div class="legend">
+      <span><i style="background:#FEDF57;border:1px solid #d6b900"></i> sentence Text</span>
+      <span><i style="background:#FF5D5D"></i> startRect (getBoundingBox(start))</span>
+      <span><i style="background:#3A86FF"></i> endRect (getBoundingBox(end-1))</span>
+      <span><i style="background:#2EB872"></i> Canvas Path 결과</span>
+    </div>
+    <div class="step-log" id="canvasLog"></div>
+  </section>
+
+  <footer>
+    Shadoweng · <code>com.bremenband.shadoweng</code> · Pretendard · Compose<br/>
+    인터랙티브 포트폴리오 컴포넌트 · 단일 HTML / vanilla JS
+  </footer>
+</div>
+
+<script>
+/* =================================================================
+ * Section 1: Feature 도메인 트리 데이터 (실제 폴더 구조 그대로)
+ * ================================================================= */
+const DOMAINS = [
+  {
+    key:"auth", title:"auth", desc:"로그인 · 토큰 · 닉네임",
+    layers:{
+      api:["AuthApi.kt","dto/AuthDtos.kt"],
+      data:["TokenStorage.kt"],
+      presentation:["AuthScreen.kt","AuthUiState.kt","AuthViewModel.kt","SetNickNameScreen.kt","SetNickNameViewModel.kt","SplachScreen.kt","SplashViewModel.kt"],
+      repository:["AuthRepository.kt","AuthRepositoryImpl.kt"],
+    }
+  },
+  {
+    key:"content", title:"content", desc:"유튜브 등록 · 구간 선택",
+    layers:{
+      api:["ContentApi.kt","dto/ContentDtos.kt"],
+      presentation:["loading/ContentLoadingScreen.kt","loading/ContentLoadingState.kt","loading/ContentLoadingViewModel.kt","range/ContentRangeScreen.kt","range/ContentRangeState.kt","range/ContentRangeViewModel.kt","register/ContentRegisterScreen.kt","register/ContentRegisterState.kt","register/ContentRegisterViewModel.kt"],
+      repository:["ContentRepository.kt","ContentRepositoryImpl.kt"],
+      util:["YoutubeUrlParser.kt"],
+    }
+  },
+  {
+    key:"game", title:"game", desc:"하트 · 라운드 · 리더보드",
+    layers:{
+      api:["GameApi.kt","dto/GameDtos.kt"],
+      domain:["model/GameEvalResult.kt","model/GameLeaderboard.kt","model/GameProfile.kt","model/GameRound.kt","model/LevelStatus.kt"],
+      mapper:["GameMapper.kt"],
+      presentation:["home/GameHomeScreen.kt","home/GameHomeState.kt","home/GameHomeViewModel.kt","leaderboard/LeaderboardScreen.kt","leaderboard/LeaderboardState.kt","leaderboard/LeaderboardViewModel.kt","levelselect/GameLevelSelectScreen.kt","levelselect/GameLevelSelectState.kt","levelselect/GameLevelSelectViewModel.kt","play/GamePlayContract.kt","play/GamePlayScreen.kt","play/GamePlayViewModel.kt","play/RoundResultModal.kt","result/GameResultScreen.kt","result/GameResultUiState.kt"],
+      repository:["GameRepository.kt","GameRepositoryImpl.kt"],
+    }
+  },
+  {
+    key:"home", title:"home", desc:"홈 대시보드",
+    layers:{
+      api:["HomeApi.kt","dto/HomeDto.kt"],
+      domain:["model/UserProfile.kt"],
+      mapper:["HomeMapper.kt"],
+      presentation:["HomeScreen.kt","HomeUiState.kt","HomeViewModel.kt"],
+      repository:["HomeRepository.kt","HomeRepositoryImpl.kt"],
+    }
+  },
+  {
+    key:"mypage", title:"mypage", desc:"북마크 · 세션 기록",
+    layers:{
+      api:["MyPageApi.kt","dto/MyPageDtos.kt"],
+      domain:["model/BookmarkedSentence.kt","model/MyPageProfile.kt","model/SessionSummary.kt"],
+      mapper:["MyPageMapper.kt"],
+      presentation:["bookmark/BookmarkUiState.kt","bookmark/BookmarkViewModel.kt","mypage/MyPageScreen.kt","mypage/MyPageUiState.kt","mypage/MyPageViewModel.kt","sessions/SessionListUiState.kt","sessions/SessionListViewModel.kt"],
+      repository:["MyPageRepository.kt","MyPageRepositoryImpl.kt"],
+    }
+  },
+  {
+    key:"profile", title:"profile", desc:"내 정보",
+    layers:{
+      api:["MyInfoApi.kt"],
+      presentation:["MyInfoEvent.kt","MyInfoScreen.kt","MyInfoUiState.kt","MyInfoViewModel.kt"],
+    }
+  },
+  {
+    key:"stats", title:"stats", desc:"학습 통계 (단일 화면)",
+    layers:{
+      presentation:["StatsScreen.kt","StatsUiState.kt","StatsViewModel.kt"],
+    }
+  },
+  {
+    key:"study", title:"study", desc:"학습 세션 · 하이라이트 · 리포트",
+    layers:{
+      api:["StudyApi.kt","dto/StudyDtos.kt"],
+      domain:["EvaluationResult.kt","SentenceItem.kt","StudyReport.kt","StudySession.kt"],
+      mapper:["EvaluationAnnotationMapper.kt","StudyMapper.kt"],
+      presentation:["component/StepIndicator.kt","highlight/StudyHighlightScreen.kt","highlight/StudyHighlightState.kt","highlight/StudyHighlightViewModel.kt","learning/StudyLearningScreen.kt","learning/StudyLearningState.kt","learning/StudyLearningViewModel.kt","loading/StudyLoadingScreen.kt","loading/StudyLoadingState.kt","loading/StudyLoadingViewModel.kt","report/StudyReportScreen.kt","report/StudyReportState.kt","report/StudyReportViewModel.kt","session/StudySessionScreen.kt","session/StudySessionState.kt","session/StudySessionViewModel.kt"],
+      repository:["StudyRepository.kt","StudyRepositoryImpl.kt"],
+    }
+  },
+];
+
+const LAYER_ORDER = ["api","data","domain","mapper","presentation","repository","util"];
+const LAYER_LABEL = {
+  api:"api", data:"data", domain:"domain", mapper:"mapper",
+  presentation:"presentation", repository:"repository", util:"util"
+};
+
+function renderDomainList(){
+  const el = document.getElementById("domainList");
+  el.innerHTML = "";
+  DOMAINS.forEach((d,i)=>{
+    const totalFiles = Object.values(d.layers).reduce((a,arr)=>a+arr.length,0);
+    const layerCount = Object.keys(d.layers).length;
+    const btn = document.createElement("button");
+    btn.className = "domain-btn" + (i===2 ? " active" : "");
+    btn.dataset.key = d.key;
+    btn.innerHTML = `
+      <span>
+        <span class="domain-name">${d.title}/</span>
+        <span style="font-size:12px;color:var(--brown-soft);margin-left:6px">${d.desc}</span>
+      </span>
+      <span class="domain-meta">${layerCount} layers · ${totalFiles} files</span>
+    `;
+    btn.addEventListener("click", ()=>selectDomain(d.key));
+    el.appendChild(btn);
+  });
+}
+
+function renderLayers(key){
+  const d = DOMAINS.find(x=>x.key===key);
+  const layersEl = document.getElementById("layers");
+  layersEl.innerHTML = "";
+  const presentInOrder = LAYER_ORDER.filter(l=>d.layers[l]);
+  presentInOrder.forEach((layer, idx)=>{
+    const files = d.layers[layer];
+    const isOpen = idx === 0 || (layer === "presentation");
+    const lay = document.createElement("div");
+    lay.className = "layer lay-" + layer + (isOpen ? " open" : "");
+    lay.innerHTML = `
+      <div class="layer-head">
+        <span class="layer-tag">
+          <span class="layer-dot"></span>${LAYER_LABEL[layer]}/
+          <span class="caret"></span>
+        </span>
+        <span class="layer-count">${files.length} files</span>
+      </div>
+      <div class="layer-files">
+        ${files.map(f=>{
+          const parts = f.split("/");
+          const name = parts.pop();
+          const prefix = parts.length ? `<span style="color:var(--muted)">${parts.join("/")}/</span>` : "";
+          return `<div class="file">${prefix}<b>${name}</b></div>`;
+        }).join("")}
+      </div>
+    `;
+    lay.querySelector(".layer-head").addEventListener("click", ()=>lay.classList.toggle("open"));
+    layersEl.appendChild(lay);
+  });
+  // animate in
+  layersEl.querySelectorAll(".layer").forEach((el,i)=>{
+    el.style.opacity = 0; el.style.transform = "translateY(8px)";
+    setTimeout(()=>{
+      el.style.transition = "opacity .28s ease, transform .28s ease";
+      el.style.opacity = 1; el.style.transform = "translateY(0)";
+    }, i*45);
+  });
+}
+
+function selectDomain(key){
+  document.querySelectorAll(".domain-btn").forEach(b=>b.classList.toggle("active", b.dataset.key===key));
+  renderLayers(key);
+}
+renderDomainList();
+renderLayers("game");
+
+/* =================================================================
+ * Section 2: MVI 흐름 애니메이션
+ * ================================================================= */
+const mviSteps = [
+  { step:1, tag:"State <b>collectAsStateWithLifecycle</b> → Composable 가 구독" , edge:"edge-1", from:"state", to:"ui"},
+  { step:2, tag:"User taps <b>'녹음 시작'</b> → <b>onIntent(StartCountdown)</b>", edge:"edge-2", from:"ui", to:"intent"},
+  { step:3, tag:"ViewModel <b>when(intent) → startCountdown()</b>", edge:"edge-3", from:"intent", to:"vm"},
+  { step:4, tag:"<b>_state.update { copy(countdown=3, isRecording=true) }</b> → State 재발행", edge:"edge-4a", from:"vm", to:"state"},
+  { step:5, tag:"평가 완료 → <b>_effect.send(NavigateToResult)</b> → 일회성 Channel", edge:"edge-4b", from:"vm", to:"effect"},
+];
+
+const mviPlayBtn = document.getElementById("mviPlay");
+const mviResetBtn = document.getElementById("mviReset");
+const mviStepTag = document.getElementById("mviStepTag");
+
+function setEdgeActive(id, active){
+  const e = document.getElementById(id);
+  if(!e) return;
+  e.setAttribute("stroke", active ? "#FEDF57" : "#C9C0AB");
+  e.setAttribute("stroke-width", active ? "4" : "2.5");
+  e.setAttribute("marker-end", active ? "url(#arrow-active)" : "url(#arrow)");
+}
+function clearAll(){
+  document.querySelectorAll(".node").forEach(n=>n.classList.remove("pulse"));
+  ["edge-1","edge-2","edge-3","edge-4a","edge-4b"].forEach(id=>setEdgeActive(id,false));
+}
+function pulseNode(role){
+  document.querySelectorAll(".node").forEach(n=>n.classList.remove("pulse"));
+  document.querySelector(".node."+role).classList.add("pulse");
+}
+
+let mviTimer = null;
+function playMvi(){
+  stopMvi();
+  clearAll();
+  let i = 0;
+  const tick = ()=>{
+    if(i>=mviSteps.length){
+      mviStepTag.innerHTML = "✓ 한 사이클 완료. 다시 재생 가능";
+      return;
+    }
+    const s = mviSteps[i];
+    clearAll();
+    pulseNode(s.from);
+    setEdgeActive(s.edge, true);
+    mviStepTag.innerHTML = `<b>step ${s.step}.</b> ${s.tag}`;
+    setTimeout(()=>{
+      pulseNode(s.to);
+    }, 350);
+    i++;
+    mviTimer = setTimeout(tick, 1400);
+  };
+  tick();
+}
+function stopMvi(){
+  if(mviTimer){clearTimeout(mviTimer);mviTimer=null;}
+}
+mviPlayBtn.addEventListener("click", playMvi);
+mviResetBtn.addEventListener("click", ()=>{stopMvi(); clearAll(); mviStepTag.innerHTML = "User taps <b>'녹음 시작'</b> · Click <b>흐름 재생</b>";});
+
+/* =================================================================
+ * Section 3: Canvas 오버레이 시뮬레이션
+ *   - 실제 코드 흐름 재현:
+ *     1) Text 가 sentence 를 렌더 → TextLayoutResult 확보
+ *     2) annotation.startIndex / endIndex 에서 getBoundingBox 호출
+ *     3) startRect.left, endRect.right 로 centerX 계산
+ *     4) Path 를 mid 라인 기준으로 그림
+ * ================================================================= */
+const canvas = document.getElementById("canvasSim");
+const cctx = canvas.getContext("2d");
+const SENTENCE = "She really loves singing in the rain.";
+const ANNOTATIONS = {
+  ARROW_UP:   { startIndex: SENTENCE.indexOf("really"), endIndex: SENTENCE.indexOf("really")+"really".length, color:"#FF7A2E", label:"ARROW_UP (강세 상승)" },
+  ARROW_DOWN: { startIndex: SENTENCE.indexOf("rain"),   endIndex: SENTENCE.indexOf("rain")+"rain".length,   color:"#2EB872", label:"ARROW_DOWN (하강 인토네이션)" },
+  CURVE_LONG: { startIndex: SENTENCE.indexOf("singing"),endIndex: SENTENCE.indexOf("singing")+"singing".length, color:"#8E5BFF", label:"CURVE_LONG (장음 곡선)" },
+  HIGHLIGHT:  { startIndex: SENTENCE.indexOf("loves"),  endIndex: SENTENCE.indexOf("loves")+"loves".length,  color:"#FEDF57", label:"HIGHLIGHT (SpanStyle)" },
+};
+
+let currentAnn = "ARROW_UP";
+let dpr = window.devicePixelRatio || 1;
+
+function fitCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  cctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+/* Layout: 문자별 bounding box 를 직접 계산 (실제 getBoundingBox 와 동등) */
+function layoutText(text, fontPx, x0, y0, maxW){
+  cctx.font = fontPx + "px Pretendard, system-ui";
+  cctx.textBaseline = "alphabetic";
+  const lineHeight = Math.round(fontPx * 1.55);
+  const spaceW = cctx.measureText(" ").width;
+  let x = x0, y = y0;
+  const boxes = [];
+  // word-by-word wrap, but per-char boxes
+  const words = text.split(" ");
+  for(let w=0; w<words.length; w++){
+    const word = words[w];
+    const wordW = cctx.measureText(word).width;
+    if(x + wordW > x0 + maxW && x !== x0){
+      x = x0; y += lineHeight;
+    }
+    let cx = x;
+    for(let i=0;i<word.length;i++){
+      const ch = word[i];
+      const chW = cctx.measureText(ch).width;
+      boxes.push({left:cx, right:cx+chW, top:y-fontPx*0.85, bottom:y+fontPx*0.18, ch});
+      cx += chW;
+    }
+    // append space (also tracked, so absolute string index aligns)
+    if(w !== words.length-1){
+      boxes.push({left:cx, right:cx+spaceW, top:y-fontPx*0.85, bottom:y+fontPx*0.18, ch:" "});
+      x = cx + spaceW;
+    }else{
+      x = cx;
+    }
+  }
+  return {boxes, lineHeight};
+}
+
+function drawBaseText(layout, highlightAnn){
+  cctx.font = "20px Pretendard, system-ui";
+  cctx.textBaseline = "alphabetic";
+  // optional highlight background (SpanStyle background)
+  if(highlightAnn && currentAnn === "HIGHLIGHT"){
+    for(let i=highlightAnn.startIndex; i<highlightAnn.endIndex; i++){
+      const b = layout.boxes[i]; if(!b) continue;
+      cctx.fillStyle = highlightAnn.color;
+      cctx.fillRect(b.left, b.top, b.right-b.left, b.bottom-b.top);
+    }
+  }
+  cctx.fillStyle = "#362000";
+  for(let i=0;i<layout.boxes.length;i++){
+    const b = layout.boxes[i];
+    cctx.fillText(b.ch, b.left, b.bottom - 4);
+  }
+}
+
+function strokeRect(b, color, dash){
+  cctx.save();
+  cctx.strokeStyle = color;
+  cctx.lineWidth = 1.5;
+  if(dash) cctx.setLineDash(dash);
+  cctx.strokeRect(b.left-1, b.top-1, b.right-b.left+2, b.bottom-b.top+2);
+  cctx.restore();
+}
+
+function drawTickLabel(b, text, color, above){
+  cctx.fillStyle = color;
+  cctx.font = "11px 'JetBrains Mono', monospace";
+  if(above){
+    cctx.fillText(text, b.left, b.top - 4);
+  }else{
+    cctx.fillText(text, b.left, b.bottom + 12);
+  }
+}
+
+function easeOut(t){return 1 - Math.pow(1-t, 3)}
+
+async function animate(durMs, fn){
+  return new Promise(res=>{
+    const t0 = performance.now();
+    function loop(now){
+      const t = Math.min(1, (now-t0)/durMs);
+      fn(easeOut(t));
+      if(t<1) requestAnimationFrame(loop);
+      else res();
+    }
+    requestAnimationFrame(loop);
+  });
+}
+
+function log(text){
+  const el = document.getElementById("canvasLog");
+  el.innerHTML += text + "\n";
+  el.scrollTop = el.scrollHeight;
+}
+function clearLog(){document.getElementById("canvasLog").innerHTML = "";}
+
+let runId = 0;
+async function runSimulation(){
+  fitCanvas();
+  const my = ++runId;
+  clearLog();
+  const rect = canvas.getBoundingClientRect();
+  const layout = layoutText(SENTENCE, 20, 28, 70, rect.width - 56);
+
+  const ann = ANNOTATIONS[currentAnn];
+
+  /* Frame 1: render text only */
+  cctx.clearRect(0,0,canvas.width,canvas.height);
+  cctx.fillStyle = "#FAF9F6";
+  cctx.fillRect(0,0,rect.width,rect.height);
+  drawBaseText(layout, null);
+  log(`<b>0.</b> sentence = "${SENTENCE}"`);
+  log(`<b>1.</b> Text composable 가 렌더 → onTextLayout 콜백 → TextLayoutResult 확보`);
+  await new Promise(r=>setTimeout(r, 700));
+  if(my!==runId) return;
+
+  if(currentAnn === "HIGHLIGHT"){
+    log(`<b>2.</b> annotation.type = HIGHLIGHT → Canvas 가 아니라 <b>SpanStyle(background=...)</b> 로 처리`);
+    await animate(500, p=>{
+      cctx.clearRect(0,0,canvas.width,canvas.height);
+      cctx.fillStyle = "#FAF9F6";
+      cctx.fillRect(0,0,rect.width,rect.height);
+      cctx.globalAlpha = p;
+      drawBaseText(layout, ann);
+      cctx.globalAlpha = 1;
+    });
+    log(`<b>3.</b> charIndex [${ann.startIndex}, ${ann.endIndex}) 에 background 색만 입히고 끝.`);
+    log(`<b>→</b> Canvas 오버레이는 ARROW_UP / ARROW_DOWN / CURVE_* 에서만 작동.`);
+    return;
+  }
+
+  /* Frame 2: getBoundingBox(start) */
+  log(`<b>2.</b> annotation.startIndex = ${ann.startIndex} ('${SENTENCE[ann.startIndex]}'), endIndex = ${ann.endIndex}`);
+  log(`<b>3.</b> val startRect = layout.<b>getBoundingBox(${ann.startIndex})</b>`);
+  const startRect = layout.boxes[ann.startIndex];
+  await animate(450, p=>{
+    cctx.clearRect(0,0,canvas.width,canvas.height);
+    cctx.fillStyle = "#FAF9F6"; cctx.fillRect(0,0,rect.width,rect.height);
+    drawBaseText(layout, null);
+    cctx.save();
+    cctx.globalAlpha = p;
+    strokeRect(startRect, "#FF5D5D", [4,3]);
+    cctx.restore();
+  });
+  drawTickLabel(startRect, `start: x=${startRect.left.toFixed(0)} y=${startRect.top.toFixed(0)}`, "#FF5D5D", true);
+  await new Promise(r=>setTimeout(r, 350));
+  if(my!==runId) return;
+
+  /* Frame 3: getBoundingBox(end-1) */
+  log(`<b>4.</b> val endRect = layout.<b>getBoundingBox(${ann.endIndex - 1})</b>`);
+  const endRect = layout.boxes[ann.endIndex - 1];
+  await animate(450, p=>{
+    cctx.clearRect(0,0,canvas.width,canvas.height);
+    cctx.fillStyle = "#FAF9F6"; cctx.fillRect(0,0,rect.width,rect.height);
+    drawBaseText(layout, null);
+    strokeRect(startRect, "#FF5D5D", [4,3]);
+    drawTickLabel(startRect, `start: x=${startRect.left.toFixed(0)} y=${startRect.top.toFixed(0)}`, "#FF5D5D", true);
+    cctx.save();
+    cctx.globalAlpha = p;
+    strokeRect(endRect, "#3A86FF", [4,3]);
+    cctx.restore();
+  });
+  drawTickLabel(endRect, `end: x=${endRect.right.toFixed(0)}`, "#3A86FF", false);
+  await new Promise(r=>setTimeout(r, 350));
+  if(my!==runId) return;
+
+  /* Frame 4: compute centerX, mid */
+  const mid = startRect.top + (startRect.bottom - startRect.top) * 0.5;
+  const centerX = (startRect.left + endRect.right) / 2;
+  log(`<b>5.</b> val mid = (startRect.top + startRect.bottom) / 2 = ${mid.toFixed(1)}`);
+  log(`<b>6.</b> val centerX = (startRect.left + endRect.right) / 2 = ${centerX.toFixed(1)}`);
+
+  // draw guidelines
+  await animate(450, p=>{
+    cctx.clearRect(0,0,canvas.width,canvas.height);
+    cctx.fillStyle = "#FAF9F6"; cctx.fillRect(0,0,rect.width,rect.height);
+    drawBaseText(layout, null);
+    strokeRect(startRect, "#FF5D5D", [4,3]);
+    strokeRect(endRect, "#3A86FF", [4,3]);
+    drawTickLabel(startRect, `start: x=${startRect.left.toFixed(0)} y=${startRect.top.toFixed(0)}`, "#FF5D5D", true);
+    drawTickLabel(endRect, `end: x=${endRect.right.toFixed(0)}`, "#3A86FF", false);
+    cctx.save();
+    cctx.globalAlpha = p*.6;
+    cctx.strokeStyle = "#888"; cctx.setLineDash([2,3]); cctx.lineWidth = 1;
+    cctx.beginPath();
+    cctx.moveTo(startRect.left, mid); cctx.lineTo(endRect.right, mid); cctx.stroke();
+    cctx.beginPath();
+    cctx.moveTo(centerX, startRect.top - 14); cctx.lineTo(centerX, startRect.bottom + 14); cctx.stroke();
+    cctx.restore();
+    cctx.fillStyle = "#888"; cctx.font = "10px 'JetBrains Mono', monospace";
+    cctx.fillText(`mid=${mid.toFixed(0)}`, endRect.right + 6, mid + 3);
+    cctx.fillText(`centerX=${centerX.toFixed(0)}`, centerX - 36, startRect.top - 18);
+  });
+  await new Promise(r=>setTimeout(r, 300));
+  if(my!==runId) return;
+
+  /* Frame 5: draw the actual Path */
+  log(`<b>7.</b> Path { moveTo / cubicTo / lineTo } → drawPath(color=${ann.color})`);
+  await animate(800, p=>{
+    cctx.clearRect(0,0,canvas.width,canvas.height);
+    cctx.fillStyle = "#FAF9F6"; cctx.fillRect(0,0,rect.width,rect.height);
+    drawBaseText(layout, null);
+    // faded boxes
+    cctx.save(); cctx.globalAlpha = .35;
+    strokeRect(startRect, "#FF5D5D", [4,3]);
+    strokeRect(endRect, "#3A86FF", [4,3]);
+    cctx.restore();
+    // animated path
+    drawAnnotationPath(currentAnn, startRect, endRect, mid, centerX, ann.color, p);
+  });
+  log(`<b>8.</b> ✓ 화면 위에 ${ann.label} 가 문자 좌표 기준으로 정렬되어 표시됨.`);
+}
+
+function drawAnnotationPath(kind, startRect, endRect, mid, centerX, color, progress){
+  cctx.save();
+  cctx.strokeStyle = color;
+  cctx.lineWidth = 3;
+  cctx.lineCap = "round";
+  cctx.lineJoin = "round";
+
+  if(kind === "ARROW_UP"){
+    // Up-curve + arrow head (Compose 코드와 동일 구조)
+    const sx = centerX;
+    const baseY = mid + 8;
+    const topY = mid - 14;
+    cctx.beginPath();
+    // cubic from (sx, baseY) towards (sx+5, topY-2) via control points
+    const p0 = {x:sx, y:baseY};
+    const p1 = {x:sx-5, y:mid-10};
+    const p2 = {x:sx+5, y:topY};
+    const p3 = {x:sx+5, y:topY-2};
+    // animate by clipping with progress: draw with partial cubic
+    drawAnimatedCubic(p0,p1,p2,p3, Math.min(progress*1.4,1));
+    // arrow head shows after curve done
+    if(progress > 0.7){
+      const a = (progress-0.7)/0.3;
+      cctx.beginPath();
+      cctx.moveTo(p3.x + 8*a, p3.y - 6*a);
+      cctx.lineTo(p3.x, p3.y);
+      cctx.lineTo(p3.x - 6*a, p3.y - 8*a);
+      cctx.stroke();
+    }
+  } else if(kind === "ARROW_DOWN"){
+    const sx = centerX;
+    const top = mid - 8, bot = mid + 8;
+    const left = {x:sx-8, y:top}, mid_ = {x:sx, y:bot}, right = {x:sx+8, y:top};
+    cctx.beginPath();
+    if(progress <= .5){
+      const p = progress/.5;
+      cctx.moveTo(left.x, left.y);
+      cctx.lineTo(left.x + (mid_.x-left.x)*p, left.y + (mid_.y-left.y)*p);
+    } else {
+      cctx.moveTo(left.x, left.y);
+      cctx.lineTo(mid_.x, mid_.y);
+      const p = (progress-.5)/.5;
+      cctx.lineTo(mid_.x + (right.x-mid_.x)*p, mid_.y + (right.y-mid_.y)*p);
+    }
+    cctx.stroke();
+  } else if(kind === "CURVE_LONG"){
+    const left = startRect.left, right = endRect.right;
+    const p0 = {x:left, y:mid};
+    const p1 = {x:left + (right-left)*0.25, y:mid - 12};
+    const p2 = {x:left + (right-left)*0.75, y:mid + 12};
+    const p3 = {x:right, y:mid};
+    drawAnimatedCubic(p0,p1,p2,p3, progress);
+  }
+  cctx.restore();
+}
+
+function drawAnimatedCubic(p0,p1,p2,p3, progress){
+  // approximate by sampling t=0..progress
+  const steps = 60;
+  cctx.beginPath();
+  for(let i=0;i<=steps*progress;i++){
+    const t = i/steps;
+    const x = (1-t)*(1-t)*(1-t)*p0.x + 3*(1-t)*(1-t)*t*p1.x + 3*(1-t)*t*t*p2.x + t*t*t*p3.x;
+    const y = (1-t)*(1-t)*(1-t)*p0.y + 3*(1-t)*(1-t)*t*p1.y + 3*(1-t)*t*t*p2.y + t*t*t*p3.y;
+    if(i===0) cctx.moveTo(x,y); else cctx.lineTo(x,y);
+  }
+  cctx.stroke();
+}
+
+document.getElementById("annSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  document.querySelectorAll("#annSeg button").forEach(x=>x.classList.toggle("on", x===b));
+  currentAnn = b.dataset.ann;
+  runSimulation();
+});
+document.getElementById("canvasReplay").addEventListener("click", runSimulation);
+window.addEventListener("resize", ()=>{fitCanvas(); runSimulation();});
+
+/* boot */
+setTimeout(runSimulation, 200);
+
+</script>
+</body>
+</html>

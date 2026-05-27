@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>OneStep · Android Architecture Explorer</title>
+<style>
+  /* ───── 디자인 토큰 (레포의 Color.kt에서 추출) ───── */
+  :root {
+    --ivory:        #FFF4E8;
+    --light:        #FFF7ED;
+    --orange:       #FFA94D;
+    --orange-soft:  #FFDEB8;
+    --yellow:       #F7D439;
+    --brown:        #5C4742;
+    --pink:         #FF8BA0;
+    --pink-soft:    #FFE5F1;
+    --blue:         #7CB8FF;
+    --blue-soft:    #B2DCFF;
+    --green:        #62A969;
+    --green-soft:   #BEFFBE;
+    --gray-900:     #212121;
+    --gray-700:     #656565;
+    --gray-300:     #A0A0A0;
+    --gray-100:     #F2F2F2;
+    --recommend:    #FDD2A2;
+    --self:         #FDD6FD;
+    --route:        #BFE0FD;
+
+    --pixel-shadow: 4px 4px 0 var(--brown);
+    --pixel-shadow-sm: 2px 2px 0 var(--brown);
+    --radius: 0px; /* 픽셀아트 컨셉 — 라운드 최소화 */
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--ivory); color: var(--brown); }
+  body {
+    /* 네오둥근모는 외부 폰트라 못 쓰지만, 픽셀/레트로 느낌의 시스템 모노스페이스로 대체 */
+    font-family: "DungGeunMo", "Galmuri11", "D2Coding", "Consolas", ui-monospace, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    image-rendering: pixelated;
+  }
+
+  /* ───── 헤더 ───── */
+  header {
+    background: var(--brown);
+    color: var(--ivory);
+    padding: 18px 28px;
+    border-bottom: 4px solid var(--orange);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 {
+    margin: 0; font-size: 20px; letter-spacing: 1px;
+  }
+  header .badge {
+    display: inline-block; padding: 2px 8px; margin-left: 8px;
+    background: var(--orange); color: var(--brown);
+    font-size: 11px; font-weight: bold;
+  }
+  header .meta { font-size: 11px; color: var(--orange-soft); }
+
+  /* ───── 탭 ───── */
+  .tabs {
+    display: flex; gap: 0;
+    background: var(--ivory);
+    border-bottom: 3px solid var(--brown);
+    padding: 0 24px;
+  }
+  .tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: 3px solid transparent;
+    border-bottom: none;
+    color: var(--gray-700);
+    cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    margin-bottom: -3px;
+  }
+  .tab.active {
+    background: var(--orange-soft);
+    border-color: var(--brown);
+    color: var(--brown);
+  }
+  .tab:hover:not(.active) { color: var(--orange); }
+
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ───── 레이어 맵 ───── */
+  .layer-grid {
+    display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px;
+  }
+  @media (max-width: 900px) { .layer-grid { grid-template-columns: 1fr; } }
+
+  .layer-stack { display: flex; flex-direction: column; gap: 14px; }
+  .layer {
+    background: var(--light);
+    border: 3px solid var(--brown);
+    box-shadow: var(--pixel-shadow);
+    padding: 14px 16px;
+  }
+  .layer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 2px dashed var(--orange);
+  }
+  .layer-title { font-size: 14px; font-weight: bold; }
+  .layer-tag {
+    font-size: 10px; padding: 2px 6px;
+    background: var(--brown); color: var(--ivory);
+  }
+  .layer.presentation .layer-tag { background: var(--orange); color: var(--brown); }
+  .layer.domain       .layer-tag { background: var(--green);  color: var(--brown); }
+  .layer.data         .layer-tag { background: var(--blue);   color: var(--brown); }
+
+  .module-list { display: flex; flex-direction: column; gap: 6px; }
+  .module {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--ivory);
+    border: 2px solid var(--brown);
+    cursor: pointer;
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+  .module:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--pixel-shadow-sm);
+  }
+  .module.active {
+    background: var(--orange-soft);
+    transform: translate(-2px, -2px);
+    box-shadow: var(--pixel-shadow-sm);
+  }
+  .module .name { font-weight: bold; font-size: 12.5px; }
+  .module .kind {
+    font-size: 10px; padding: 1px 5px;
+    background: var(--gray-100); color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+  }
+  .module .kind.vm { background: var(--pink-soft); color: var(--brown); border-color: var(--pink); }
+  .module .kind.uc { background: var(--green-soft); color: var(--brown); border-color: var(--green); }
+  .module .kind.repo { background: var(--blue-soft); color: var(--brown); border-color: var(--blue); }
+  .module .kind.svc { background: var(--orange-soft); color: var(--brown); border-color: var(--orange); }
+
+  /* ───── 디테일 패널 ───── */
+  .detail {
+    background: var(--brown);
+    color: var(--ivory);
+    border: 3px solid var(--brown);
+    box-shadow: var(--pixel-shadow);
+    padding: 0;
+    position: sticky; top: 16px;
+    min-height: 520px;
+    display: flex; flex-direction: column;
+  }
+  .detail-head {
+    padding: 12px 16px;
+    background: var(--orange);
+    color: var(--brown);
+    border-bottom: 3px solid var(--brown);
+  }
+  .detail-head .title { font-size: 14px; font-weight: bold; }
+  .detail-head .path { font-size: 11px; opacity: 0.8; word-break: break-all; }
+  .detail-why {
+    padding: 10px 16px;
+    background: var(--orange-soft); color: var(--brown);
+    border-bottom: 3px solid var(--brown);
+    font-size: 12px;
+  }
+  .detail-why b { color: var(--brown); }
+  .detail-code {
+    flex: 1;
+    margin: 0; padding: 14px 16px;
+    background: var(--brown);
+    color: var(--ivory);
+    font-family: "D2Coding", "Consolas", ui-monospace, monospace;
+    font-size: 12px; line-height: 1.6;
+    overflow: auto; white-space: pre;
+    border: none;
+  }
+  .detail-code .kw  { color: #FFB57A; }
+  .detail-code .typ { color: #BEFFBE; }
+  .detail-code .str { color: #FFE5F1; }
+  .detail-code .num { color: #F7D439; }
+  .detail-code .cmt { color: #A0A0A0; font-style: italic; }
+  .detail-empty {
+    padding: 24px; text-align: center; color: var(--orange-soft);
+    font-size: 12px;
+  }
+
+  /* ───── 상태 흐름 (다이어그램) ───── */
+  .diagram-wrap {
+    background: var(--light);
+    border: 3px solid var(--brown);
+    box-shadow: var(--pixel-shadow);
+    padding: 16px;
+    overflow: auto;
+  }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-bottom: 14px; padding-bottom: 12px;
+    border-bottom: 2px dashed var(--orange);
+    font-size: 11px;
+  }
+  .legend .swatch {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid var(--brown); margin-right: 6px; vertical-align: middle;
+  }
+  svg.diagram { width: 100%; min-width: 880px; height: 560px; display: block; }
+  .node-rect {
+    stroke: var(--brown); stroke-width: 2.5; cursor: pointer;
+    transition: filter 120ms ease;
+  }
+  .node-rect:hover { filter: brightness(0.94); }
+  .node-rect.source   { fill: var(--blue-soft); }
+  .node-rect.raw      { fill: var(--orange-soft); }
+  .node-rect.derived  { fill: var(--green-soft); }
+  .node-rect.route    { fill: var(--pink-soft); }
+  .node-text {
+    font-family: inherit; font-size: 11px; fill: var(--brown);
+    font-weight: bold; pointer-events: none; text-anchor: middle;
+  }
+  .node-sub {
+    font-family: inherit; font-size: 9.5px; fill: var(--gray-700);
+    pointer-events: none; text-anchor: middle;
+  }
+  .edge {
+    stroke: var(--brown); stroke-width: 2; fill: none;
+    marker-end: url(#arrow);
+  }
+  .edge.derived { stroke: var(--green); stroke-dasharray: 5 3; }
+  .edge.guard   { stroke: var(--pink); stroke-dasharray: 2 3; }
+
+  .node-info {
+    margin-top: 14px; padding: 12px 14px;
+    background: var(--ivory); border: 2px solid var(--brown);
+    box-shadow: var(--pixel-shadow-sm);
+    min-height: 80px; font-size: 12.5px;
+  }
+  .node-info .nt { font-weight: bold; color: var(--brown); margin-bottom: 4px; }
+  .node-info .nd { color: var(--gray-700); }
+  .node-info code {
+    background: var(--orange-soft); padding: 1px 5px;
+    border: 1px solid var(--orange); font-size: 11px;
+  }
+
+  footer {
+    margin-top: 32px; padding: 16px 24px;
+    border-top: 3px dashed var(--brown);
+    text-align: center; font-size: 11px; color: var(--gray-700);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>OneStep <span class="badge">Android</span></h1>
+    <div class="meta">Kotlin · Jetpack Compose · MVVM + Clean Architecture · Hilt · Mapbox · STOMP</div>
+  </div>
+  <div class="meta">한 발짝씩, 루틴을 만드는 반려동물 챌린지 앱</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="layer">레이어 맵</button>
+  <button class="tab" data-tab="flow">WalkViewModel 상태 흐름</button>
+</nav>
+
+<main>
+
+  <!-- ───── 탭 1: 레이어 맵 ───── -->
+  <section id="panel-layer" class="panel active">
+    <div class="layer-grid">
+      <div class="layer-stack" id="layers"></div>
+      <aside class="detail" id="detail">
+        <div class="detail-empty">← 왼쪽 모듈을 클릭하면<br/>핵심 코드가 여기에 표시됩니다</div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ───── 탭 2: 상태 흐름 ───── -->
+  <section id="panel-flow" class="panel">
+    <div class="diagram-wrap">
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--blue-soft)"></span>외부 소스</span>
+        <span><span class="swatch" style="background:var(--orange-soft)"></span>원시 StateFlow</span>
+        <span><span class="swatch" style="background:var(--green-soft)"></span>파생/계산 상태</span>
+        <span><span class="swatch" style="background:var(--pink-soft)"></span>경로 / UI 상태</span>
+        <span style="margin-left:auto">━ 의존  &nbsp; ┄ 파생(combine)  &nbsp; ┈ 가드/판정</span>
+      </div>
+      <svg class="diagram" id="diagram" viewBox="0 0 920 560" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--brown)"/>
+          </marker>
+        </defs>
+        <!-- 노드/엣지는 JS가 렌더링 -->
+      </svg>
+      <div class="node-info" id="node-info">
+        <div class="nt">상태 노드를 클릭해 보세요</div>
+        <div class="nd">각 StateFlow의 역할과 소스, 코드 위치가 표시됩니다.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  generated from <code>S14P11A508/android</code> · 색상·타이포그래피는 <code>presentation/theme/Color.kt</code> &amp; <code>Type.kt</code> 기준
+</footer>
+
+<script>
+/* ──────────────────────────────────────────────
+   1. 레이어 맵 데이터 — 실제 레포 경로 기반
+   ────────────────────────────────────────────── */
+const LAYERS = [
+  {
+    id: "presentation", title: "Presentation",
+    desc: "Compose UI + ViewModel (StateFlow 기반 단일 출처)",
+    modules: [
+      {
+        id: "walk-vm", kind: "vm", name: "WalkViewModel",
+        path: "presentation/home/walk/WalkViewModel.kt",
+        why: "산책 화면의 모든 상태(12개 StateFlow)를 ViewModel로 끌어올려, 화면 회전·탭 이동에도 위치 추적 Job이 살아남도록 설계.",
+        code:
+`@HiltViewModel
+class WalkViewModel @Inject constructor(
+    private val repository: WalkRepository,
+    private val startWalkUseCase: StartWalkUseCase,
+    private val completeWalkUseCase: CompleteWalkUseCase,
+    private val trackLocationUseCase: TrackLocationUseCase,
+    private val calculateDistanceUseCase: CalculateDistanceUseCase,
+    private val directionsService: DirectionsService,
+    private val imageRepository: ImageRepository
+) : ViewModel() {
+
+    private val _currentLocation = MutableStateFlow<PathPoint?>(null)
+    val currentLocation: StateFlow<PathPoint?> = _currentLocation.asStateFlow()
+
+    private val _pathPoints = MutableStateFlow<List<PathPoint>>(emptyList())
+    val pathPoints: StateFlow<List<PathPoint>> = _pathPoints.asStateFlow()
+
+    private val _totalDistance = MutableStateFlow(0.0)
+    val totalDistance: StateFlow<Double> = _totalDistance.asStateFlow()
+
+    // ★ 파생 상태 — combine으로 두 흐름에서 자동 계산
+    val averageSpeed: StateFlow<Double> = combine(
+        totalDistance, elapsedTime
+    ) { distance, time ->
+        if (time > 0) (distance / 1000.0) / (time / 3600.0) else 0.0
+    }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
+}`
+      },
+      {
+        id: "firechat-vm", kind: "vm", name: "FireChatViewModel",
+        path: "presentation/features/firechat/FireChatViewModel.kt",
+        why: "실시간 챗에서 유저당 버블 Job을 맵으로 관리 — 연속 메시지가 와도 cancel-and-replace로 깜빡임 방지.",
+        code:
+`private val bubbleJobs = mutableMapOf<String, Job>()
+private val _activeBubbles = MutableStateFlow<Map<String, String>>(emptyMap())
+
+private fun showBubbleTemporarily(senderCode: String, content: String) {
+    bubbleJobs[senderCode]?.cancel()                  // 이전 Job 취소
+    bubbleJobs[senderCode] = viewModelScope.launch {
+        try {
+            _activeBubbles.update { it + (senderCode to content) }
+            delay(FireChatConstants.Durations.BUBBLE_DISPLAY_DURATION)
+            _activeBubbles.update { it - senderCode }
+        } finally {
+            bubbleJobs.remove(senderCode)             // 자기 정리
+        }
+    }
+}`
+      },
+      {
+        id: "pixel-bubble", kind: "vm", name: "PixelChatBubble",
+        path: "presentation/features/firechat/components/PixelChatBubble.kt",
+        why: "9-patch 없이 Compose GenericShape로 픽셀 챗 버블을 수학적으로 정의 — 어떤 사이즈에도 꼬리가 중앙 정렬.",
+        code:
+`private fun getPixelBubbleShape(isMine: Boolean): Shape = GenericShape { size, _ ->
+    val w = size.width
+    val h = size.height
+    val tailH = FireChatConstants.Dimensions.BubbleTailHeight
+
+    moveTo(0f, 0f)
+    lineTo(w, 0f)
+    lineTo(w, h - tailH)
+    // 중앙 하단 꼬리
+    lineTo(w / 2 + 15f, h - tailH)
+    lineTo(w / 2, h)
+    lineTo(w / 2 - 15f, h - tailH)
+    lineTo(0f, h - tailH)
+    close()
+}`
+      }
+    ]
+  },
+  {
+    id: "domain", title: "Domain",
+    desc: "UseCase / Repository 인터페이스 / 순수 모델 — 안드로이드 의존 0",
+    modules: [
+      {
+        id: "track-uc", kind: "uc", name: "TrackLocationUseCase",
+        path: "domain/usecase/TrackLocationUseCase.kt",
+        why: "Repository의 raw Flow를 받아 도메인 규칙(정확도 20m 이상 폐기)을 한 곳에서 적용. ViewModel은 정제된 스트림만 본다.",
+        code:
+`class TrackLocationUseCase @Inject constructor(
+    private val repository: WalkRepository
+) {
+    operator fun invoke(): Flow<PathPoint> =
+        repository.observeLocationUpdates()
+            .filter { point ->
+                (point.accuracy ?: Float.MAX_VALUE) < 20f   // 노이즈 컷오프
+            }
+}`
+      },
+      {
+        id: "distance-uc", kind: "uc", name: "CalculateDistanceUseCase",
+        path: "domain/usecase/CalculateDistanceUseCase.kt",
+        why: "Haversine 공식 — 두 좌표 간 거리 계산을 도메인 계층에 두어 ViewModel 단위 테스트가 가능.",
+        code:
+`class CalculateDistanceUseCase @Inject constructor() {
+    operator fun invoke(from: PathPoint, to: PathPoint): Double {
+        val earthRadius = 6371000.0
+
+        val lat1 = toRadians(from.latitude)
+        val lat2 = toRadians(to.latitude)
+        val deltaLat = toRadians(to.latitude - from.latitude)
+        val deltaLon = toRadians(to.longitude - from.longitude)
+
+        val a = sin(deltaLat / 2).pow(2) +
+                cos(lat1) * cos(lat2) *
+                sin(deltaLon / 2).pow(2)
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return earthRadius * c
+    }
+
+    private fun toRadians(degrees: Double) = degrees * PI / 180.0
+}`
+      },
+      {
+        id: "walk-repo", kind: "repo", name: "WalkRepository (interface)",
+        path: "domain/repository/WalkRepository.kt",
+        why: "산책 도메인의 외부 경계 — observeLocationUpdates / recommendRoute / startBackgroundTracking 등 모든 IO를 추상화.",
+        code:
+`interface WalkRepository {
+    fun observeLocationUpdates(): Flow<PathPoint>
+
+    suspend fun recommendRoute(latitude: Double, longitude: Double): Long?
+    suspend fun getRouteDetail(routeId: Long): RouteDetail?
+    suspend fun getOptimizedRoute(
+        startLat: Double, startLng: Double,
+        endLat: Double,   endLng: Double
+    ): List<Point>?
+
+    fun startBackgroundTracking()
+    fun pauseBackgroundTracking()
+    fun resumeBackgroundTracking()
+}`
+      }
+    ]
+  },
+  {
+    id: "data", title: "Data",
+    desc: "Repository 구현, 원격 / 로컬 / 서비스 — 안드로이드 SDK 의존이 이곳에만 존재",
+    modules: [
+      {
+        id: "location-tracker", kind: "svc", name: "LocationTracker",
+        path: "data/local/location/LocationTracker.kt",
+        why: "콜백 기반 FusedLocationProvider를 callbackFlow로 브릿지. awaitClose로 콜백 누수 차단.",
+        code:
+`fun trackLocation(): Flow<PathPoint> = callbackFlow {
+    if (!hasLocationPermission()) {
+        close(SecurityException("위치 권한이 없습니다"))
+        return@callbackFlow
+    }
+    val callback = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            result.lastLocation?.let { trySend(it.toPathPoint()) }
+        }
+    }
+    try {
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest, callback, Looper.getMainLooper()
+        )
+    } catch (e: SecurityException) { close(e) }
+
+    awaitClose {
+        fusedLocationClient.removeLocationUpdates(callback)   // ★ 항상 해제
+    }
+}`
+      },
+      {
+        id: "walk-service", kind: "svc", name: "WalkTrackingService",
+        path: "data/local/service/WalkTrackingService.kt",
+        why: "Foreground Service로 추적을 분리 — 화면이 죽어도 산책은 계속. Android 12+ 백그라운드 위치 정책 준수.",
+        code:
+`class WalkTrackingService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + Job())
+    private var isTracking = false
+
+    private fun startTracking() {
+        if (isTracking) return
+        isTracking = true
+
+        startForeground(
+            WalkNotificationManager.NOTIFICATION_ID,
+            notificationManager.buildNotification(0, 0.0, 0.0)
+        )
+        startTimer()
+        startLocationTracking()
+    }
+
+    private fun stopTracking() {
+        isTracking = false
+        stopTimer()
+        stopLocationTracking()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+}`
+      },
+      {
+        id: "token-manager", kind: "svc", name: "TokenManager",
+        path: "data/local/TokenManager.kt",
+        why: "EncryptedSharedPreferences로 토큰을 OS 레벨 암호화. 동시에 StateFlow로 로그인 상태를 반응형 노출.",
+        code:
+`@Singleton
+class TokenManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val sharedPreferences: SharedPreferences =
+        EncryptedSharedPreferences.create(
+            context, PREFS_NAME, masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+    private val _isLoggedIn = MutableStateFlow(getAccessToken() != null)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+}`
+      }
+    ]
+  }
+];
+
+/* ──────────────────────────────────────────────
+   2. 레이어 맵 렌더링
+   ────────────────────────────────────────────── */
+const layersEl = document.getElementById("layers");
+const detailEl = document.getElementById("detail");
+
+function renderLayers() {
+  layersEl.innerHTML = LAYERS.map(layer => `
+    <div class="layer ${layer.id}">
+      <div class="layer-head">
+        <div class="layer-title">${layer.title}</div>
+        <div class="layer-tag">${layer.modules.length} files</div>
+      </div>
+      <div style="font-size:11px; color:var(--gray-700); margin-bottom:10px;">${layer.desc}</div>
+      <div class="module-list">
+        ${layer.modules.map(m => `
+          <div class="module" data-mid="${m.id}">
+            <span class="name">${m.name}</span>
+            <span class="kind ${m.kind}">${
+              m.kind === "vm" ? "ViewModel"
+              : m.kind === "uc" ? "UseCase"
+              : m.kind === "repo" ? "Repository"
+              : "Service"
+            }</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  layersEl.querySelectorAll(".module").forEach(el => {
+    el.addEventListener("click", () => {
+      layersEl.querySelectorAll(".module").forEach(x => x.classList.remove("active"));
+      el.classList.add("active");
+      const mid = el.dataset.mid;
+      const mod = LAYERS.flatMap(l => l.modules).find(m => m.id === mid);
+      showDetail(mod);
+    });
+  });
+}
+
+/* 아주 가벼운 Kotlin 신택스 하이라이터 */
+const KOTLIN_KW = ["class","object","interface","fun","val","var","return","if","else","when",
+  "is","as","in","out","this","super","null","true","false","private","public","protected",
+  "internal","override","abstract","open","suspend","operator","companion","sealed",
+  "data","import","package","by","init","try","catch","finally","throw","for","while","do"];
+const KOTLIN_TYPES = /\b(Flow|StateFlow|MutableStateFlow|SharedFlow|String|Int|Long|Double|Float|Boolean|Unit|List|Map|Set|Result|Job|CoroutineScope|Dispatchers|ViewModel|PathPoint|RouteDetail|Context|SharedPreferences|Service|Bitmap)\b/g;
+
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+}
+function highlight(code) {
+  let out = escapeHtml(code);
+  // 주석
+  out = out.replace(/(\/\/[^\n]*)/g, '<span class="cmt">$1</span>');
+  // 문자열
+  out = out.replace(/(&quot;[^&]*?&quot;|"[^"\n]*")/g, '<span class="str">$1</span>');
+  // 숫자
+  out = out.replace(/\b(\d+\.?\d*[fLd]?)\b/g, '<span class="num">$1</span>');
+  // 타입
+  out = out.replace(KOTLIN_TYPES, '<span class="typ">$1</span>');
+  // 키워드
+  out = out.replace(new RegExp("\\b("+KOTLIN_KW.join("|")+")\\b","g"),
+    '<span class="kw">$1</span>');
+  return out;
+}
+
+function showDetail(mod) {
+  detailEl.innerHTML = `
+    <div class="detail-head">
+      <div class="title">${mod.name}</div>
+      <div class="path">android/app/src/main/java/com/a508/onestep/${mod.path}</div>
+    </div>
+    <div class="detail-why"><b>왜 이 코드인가:</b> ${mod.why}</div>
+    <pre class="detail-code">${highlight(mod.code)}</pre>
+  `;
+}
+
+/* ──────────────────────────────────────────────
+   3. WalkViewModel 상태 흐름 다이어그램
+   ────────────────────────────────────────────── */
+const NODES = [
+  // 외부 소스
+  { id: "loc-uc",  x:  90, y:  60, w: 170, h: 54, cls: "source",
+    title: "trackLocationUseCase()",
+    sub: "Flow<PathPoint> · accuracy <20m 필터",
+    desc: "Repository의 raw 위치 스트림을 받아 정확도 20m 이상은 도메인 계층에서 폐기. WalkViewModel은 정제된 스트림만 collect합니다." },
+  { id: "timer",   x:  90, y: 180, w: 170, h: 54, cls: "source",
+    title: "Timer Job",
+    sub: "while(isWalking) delay 1s",
+    desc: "산책 시작 시 viewModelScope에서 띄우는 1초 틱 코루틴. _isWalking이 false가 되면 자연 종료." },
+
+  // 원시 상태
+  { id: "current", x: 340, y:  20, w: 170, h: 54, cls: "raw",
+    title: "_currentLocation",
+    sub: "StateFlow<PathPoint?>",
+    desc: "마지막 위치. 산책 중이 아니어도 갱신되어 지도에 현재 위치 마커를 그릴 수 있음." },
+  { id: "isWalk",  x: 340, y: 110, w: 170, h: 54, cls: "raw",
+    title: "_isWalking",
+    sub: "StateFlow<Boolean>",
+    desc: "산책 진행 여부. 모든 누적 로직(거리/경로/타이머)이 이 플래그를 가드로 사용." },
+  { id: "path",    x: 340, y: 200, w: 170, h: 54, cls: "raw",
+    title: "_pathPoints",
+    sub: "StateFlow<List<PathPoint>>",
+    desc: "산책 경로 폴리라인. isWalking=true일 때만 append. stopWalk 시 비우지 않고 보존해 결과 화면에서 재사용." },
+  { id: "elapsed", x: 340, y: 290, w: 170, h: 54, cls: "raw",
+    title: "_elapsedTime",
+    sub: "StateFlow<Long> · seconds",
+    desc: "산책 경과 초. Timer Job이 매 초 += 1." },
+
+  // 파생 상태
+  { id: "total",   x: 600, y: 200, w: 170, h: 54, cls: "derived",
+    title: "_totalDistance",
+    sub: "Double · Haversine 누적",
+    desc: "직전 포인트와 현재 포인트의 거리를 CalculateDistanceUseCase로 계산해 누적. 100m 이상 점프는 GPS jitter로 보고 제외." },
+  { id: "speed",   x: 600, y: 290, w: 170, h: 54, cls: "derived",
+    title: "averageSpeed",
+    sub: "combine(distance, time) · km/h",
+    desc: "별도 상태 없이 두 StateFlow의 함수로 파생. SharingStarted.Lazily로 구독자 없을 땐 계산도 안 함." },
+
+  // 가드/판정
+  { id: "arrive",  x: 600, y: 110, w: 170, h: 54, cls: "derived",
+    title: "_isNearDestination",
+    sub: "checkDestinationProximity 4중 가드",
+    desc: "샘플 수 + 경과 시간 + 정확도 + 안정 카운트(연속 3회)를 모두 만족해야 도착으로 판정. GPS 한 번 튀었다고 자동 종료되지 않도록." },
+
+  // 경로 / UI 상태
+  { id: "route",   x: 600, y:  20, w: 170, h: 54, cls: "route",
+    title: "_routeDetail",
+    sub: "StateFlow<RouteDetail?>",
+    desc: "추천된 산책 경로 상세. recommendRoute → loadRouteDetail 체인의 결과. 도착 판정의 기준점." },
+  { id: "uiState", x: 90,  y: 410, w: 170, h: 54, cls: "route",
+    title: "_uiState",
+    sub: "sealed WalkUiState",
+    desc: "Loading / Success(detail) / NoRouteAvailable / Error(msg) — 화면이 분기 처리해야 할 상태를 sealed class로 명시." },
+  { id: "opt",     x: 340, y: 410, w: 170, h: 54, cls: "route",
+    title: "_optimizedRoute",
+    sub: "List<Point>? · Mapbox Directions",
+    desc: "Mapbox Directions API로 받은 최적 경로 폴리라인. 사용자 위치와는 독립 — 추천 경로 가이드용." },
+  { id: "photo",   x: 600, y: 410, w: 170, h: 54, cls: "route",
+    title: "_verificationPhoto",
+    sub: "Bitmap? · 산책 인증샷",
+    desc: "산책 완료 시 프레임 합성된 인증샷. Dispatchers.IO에서 합성 → S3 업로드 → 갤러리 저장." }
+];
+
+const EDGES = [
+  { from:"loc-uc",  to:"current", type:"" },
+  { from:"current", to:"path",    type:"guard",   label:"if isWalking" },
+  { from:"current", to:"arrive",  type:"guard",   label:"if isWalking" },
+  { from:"path",    to:"total",   type:"",        label:"calcDistance(prev,cur)" },
+  { from:"timer",   to:"elapsed", type:"" },
+  { from:"total",   to:"speed",   type:"derived", label:"combine" },
+  { from:"elapsed", to:"speed",   type:"derived", label:"combine" },
+  { from:"route",   to:"arrive",  type:"guard",   label:"destination" },
+  { from:"isWalk",  to:"path",    type:"guard" },
+  { from:"isWalk",  to:"timer",   type:"guard",   label:"start/stop" },
+  { from:"arrive",  to:"isWalk",  type:"guard",   label:"stopWalk()" }
+];
+
+const svg = document.getElementById("diagram");
+const infoEl = document.getElementById("node-info");
+
+function renderDiagram() {
+  let svgNS = "http://www.w3.org/2000/svg";
+  // 엣지부터 (노드 아래에 깔리도록)
+  EDGES.forEach(e => {
+    const a = NODES.find(n => n.id === e.from);
+    const b = NODES.find(n => n.id === e.to);
+    if (!a || !b) return;
+
+    // 출발점: a의 오른쪽 또는 가까운 면
+    const ax = a.x + a.w, ay = a.y + a.h/2;
+    const bx = b.x,       by = b.y + b.h/2;
+
+    // bezier control points
+    const dx = Math.max(40, (bx - ax) / 2);
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", `M ${ax} ${ay} C ${ax+dx} ${ay}, ${bx-dx} ${by}, ${bx} ${by}`);
+    path.setAttribute("class", `edge ${e.type}`);
+    svg.appendChild(path);
+
+    if (e.label) {
+      const t = document.createElementNS(svgNS, "text");
+      t.setAttribute("x", (ax+bx)/2);
+      t.setAttribute("y", (ay+by)/2 - 6);
+      t.setAttribute("class", "node-sub");
+      t.textContent = e.label;
+      svg.appendChild(t);
+    }
+  });
+
+  // 노드
+  NODES.forEach(n => {
+    const g = document.createElementNS(svgNS, "g");
+    g.setAttribute("transform", `translate(${n.x},${n.y})`);
+    g.style.cursor = "pointer";
+
+    // pixel shadow
+    const sh = document.createElementNS(svgNS, "rect");
+    sh.setAttribute("x", 3); sh.setAttribute("y", 3);
+    sh.setAttribute("width", n.w); sh.setAttribute("height", n.h);
+    sh.setAttribute("fill", "#5C4742");
+    g.appendChild(sh);
+
+    const r = document.createElementNS(svgNS, "rect");
+    r.setAttribute("width", n.w); r.setAttribute("height", n.h);
+    r.setAttribute("class", `node-rect ${n.cls}`);
+    g.appendChild(r);
+
+    const t1 = document.createElementNS(svgNS, "text");
+    t1.setAttribute("class", "node-text");
+    t1.setAttribute("x", n.w/2); t1.setAttribute("y", n.h/2 - 2);
+    t1.textContent = n.title;
+    g.appendChild(t1);
+
+    const t2 = document.createElementNS(svgNS, "text");
+    t2.setAttribute("class", "node-sub");
+    t2.setAttribute("x", n.w/2); t2.setAttribute("y", n.h/2 + 14);
+    t2.textContent = n.sub;
+    g.appendChild(t2);
+
+    g.addEventListener("click", () => showNodeInfo(n));
+    svg.appendChild(g);
+  });
+}
+
+function showNodeInfo(n) {
+  infoEl.innerHTML = `
+    <div class="nt">${n.title} <span style="font-weight:normal; color:var(--gray-700); font-size:11px;">— ${n.sub}</span></div>
+    <div class="nd">${n.desc}</div>
+  `;
+}
+
+/* ──────────────────────────────────────────────
+   4. 탭 전환
+   ────────────────────────────────────────────── */
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
+  });
+});
+
+/* 초기 렌더 */
+renderLayers();
+renderDiagram();
+
+/* 기본 선택: WalkViewModel */
+const firstMod = layersEl.querySelector('[data-mid="walk-vm"]');
+if (firstMod) firstMod.click();
+</script>
+
+</body>
+</html>

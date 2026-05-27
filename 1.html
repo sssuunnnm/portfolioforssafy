@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>OneStep · 산책 추적 기능을 어떻게 안정화시켰나</title>
+<style>
+  :root {
+    --ivory:        #FFF4E8;
+    --light:        #FFF7ED;
+    --orange:       #FFA94D;
+    --orange-soft:  #FFDEB8;
+    --yellow:       #F7D439;
+    --brown:        #5C4742;
+    --brown-light:  #8A6D67;
+    --pink:         #FF8BA0;
+    --pink-soft:    #FFE5F1;
+    --blue:         #7CB8FF;
+    --blue-soft:    #B2DCFF;
+    --green:        #62A969;
+    --green-soft:   #BEFFBE;
+    --red:          #E53935;
+    --gray-700:     #656565;
+    --gray-300:     #A0A0A0;
+    --gray-100:     #F2F2F2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--ivory); color: var(--brown); }
+  body {
+    font-family: "DungGeunMo", "Galmuri11", "D2Coding", "Consolas", ui-monospace, monospace;
+    font-size: 14px; line-height: 1.6;
+    image-rendering: pixelated;
+  }
+  ::selection { background: var(--orange); color: var(--brown); }
+
+  /* ───── HERO ───── */
+  .hero {
+    background: linear-gradient(180deg, var(--orange-soft) 0%, var(--ivory) 100%);
+    padding: 60px 24px 48px;
+    border-bottom: 4px solid var(--brown);
+    text-align: center;
+  }
+  .hero .kicker {
+    display: inline-block; padding: 4px 12px;
+    background: var(--brown); color: var(--ivory);
+    font-size: 11px; letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    margin: 0 0 8px; font-size: 36px; letter-spacing: 1px;
+    color: var(--brown);
+  }
+  .hero .sub { font-size: 15px; color: var(--brown-light); max-width: 640px; margin: 0 auto; }
+  .hero .stats {
+    margin-top: 28px; display: flex; gap: 28px; justify-content: center; flex-wrap: wrap;
+  }
+  .hero .stat {
+    background: var(--ivory); border: 3px solid var(--brown);
+    padding: 12px 18px; box-shadow: 4px 4px 0 var(--brown);
+    min-width: 120px;
+  }
+  .hero .stat .num { font-size: 22px; font-weight: bold; color: var(--orange); }
+  .hero .stat .lab { font-size: 10.5px; color: var(--gray-700); letter-spacing: 1px; }
+
+  /* ───── 섹션 공통 ───── */
+  section {
+    max-width: 1100px; margin: 56px auto; padding: 0 24px;
+  }
+  .sec-head { margin-bottom: 24px; }
+  .sec-tag {
+    display: inline-block; padding: 3px 10px;
+    background: var(--brown); color: var(--orange-soft);
+    font-size: 10px; letter-spacing: 2px; margin-bottom: 12px;
+  }
+  .sec-head h2 {
+    margin: 0 0 6px; font-size: 24px; color: var(--brown);
+  }
+  .sec-head p { margin: 0; color: var(--brown-light); font-size: 13.5px; }
+
+  /* ───── 1. 스크린샷 갤러리 ───── */
+  .gallery {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+  }
+  @media (max-width: 900px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .gallery { grid-template-columns: 1fr; } }
+
+  .phone {
+    background: var(--brown);
+    border: 3px solid var(--brown);
+    border-radius: 24px;
+    padding: 10px 8px 16px;
+    box-shadow: 6px 6px 0 var(--brown-light);
+  }
+  .phone .notch {
+    width: 50px; height: 6px; background: var(--brown-light);
+    border-radius: 0 0 6px 6px; margin: 0 auto 8px;
+  }
+  .phone .screen {
+    background: var(--ivory);
+    aspect-ratio: 9 / 19;
+    border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--brown-light);
+    font-size: 11px; text-align: center; padding: 16px;
+    overflow: hidden;
+    position: relative;
+    background-image:
+      linear-gradient(45deg, var(--orange-soft) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--orange-soft) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--orange-soft) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--orange-soft) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  }
+  .phone .screen .placeholder {
+    background: var(--ivory); padding: 10px; border: 2px dashed var(--brown);
+  }
+  .phone .screen img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 14px;
+    position: absolute; inset: 0;
+  }
+  .phone .cap {
+    margin-top: 10px; padding: 0 4px;
+    font-size: 11px; text-align: center; color: var(--ivory);
+    line-height: 1.45;
+  }
+  .phone .cap b { color: var(--orange); display: block; margin-bottom: 2px; font-size: 12px; }
+
+  /* ───── 2. GPS 데모 ───── */
+  .demo-card {
+    background: var(--light);
+    border: 3px solid var(--brown);
+    box-shadow: 5px 5px 0 var(--brown);
+    padding: 22px;
+  }
+  .problem-quote {
+    background: var(--orange-soft);
+    border-left: 5px solid var(--orange);
+    padding: 12px 16px; margin: 0 0 22px;
+    font-size: 13px; color: var(--brown);
+  }
+  .problem-quote b { color: var(--red); }
+
+  .gps-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 760px) { .gps-grid { grid-template-columns: 1fr; } }
+  .canvas-wrap {
+    background: var(--ivory); border: 2.5px solid var(--brown);
+    padding: 10px; position: relative;
+  }
+  .canvas-wrap .title {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; font-size: 12px;
+  }
+  .canvas-wrap .title .badge {
+    padding: 1px 7px; font-size: 10px; letter-spacing: 1px;
+  }
+  .canvas-wrap.raw .title .badge { background: var(--red); color: var(--ivory); }
+  .canvas-wrap.filtered .title .badge { background: var(--green); color: var(--brown); }
+  canvas { display: block; width: 100%; height: 240px; background: var(--light); }
+
+  .canvas-wrap .meter {
+    margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap;
+    font-size: 11px; color: var(--gray-700);
+  }
+  .canvas-wrap .meter span b { color: var(--brown); }
+
+  .controls {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .btn {
+    padding: 10px 18px; font-family: inherit; font-size: 12.5px;
+    background: var(--orange); color: var(--brown);
+    border: 2.5px solid var(--brown);
+    box-shadow: 3px 3px 0 var(--brown);
+    cursor: pointer; font-weight: bold;
+    transition: transform 80ms;
+  }
+  .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--brown); }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--brown); }
+  .btn.ghost { background: var(--ivory); }
+
+  .constants {
+    margin-top: 16px; padding: 14px;
+    background: var(--brown); color: var(--ivory);
+    font-size: 11.5px;
+  }
+  .constants .title {
+    color: var(--orange); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;
+  }
+  .constants table { border-collapse: collapse; width: 100%; }
+  .constants td { padding: 3px 8px 3px 0; vertical-align: top; }
+  .constants td.k { color: var(--orange-soft); white-space: nowrap; }
+  .constants td.v { color: var(--yellow); font-weight: bold; white-space: nowrap; }
+  .constants td.d { color: var(--ivory); opacity: 0.8; }
+
+  /* ───── 3. StateFlow 시뮬레이터 ───── */
+  .sim-card {
+    background: var(--light);
+    border: 3px solid var(--brown);
+    box-shadow: 5px 5px 0 var(--brown);
+    padding: 22px;
+  }
+  .sim-flow {
+    display: grid; grid-template-columns: 1fr 60px 1fr 60px 1fr; gap: 8px;
+    align-items: center; margin: 18px 0 22px;
+  }
+  @media (max-width: 760px) {
+    .sim-flow { grid-template-columns: 1fr; gap: 14px; }
+    .sim-flow .arrow { display: none; }
+  }
+  .sim-node {
+    background: var(--ivory); border: 3px solid var(--brown);
+    padding: 14px; box-shadow: 3px 3px 0 var(--brown);
+    text-align: center; min-height: 120px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .sim-node.raw      { background: var(--orange-soft); }
+  .sim-node.derived  { background: var(--green-soft); position: relative; }
+  .sim-node.derived::before {
+    content: "DERIVED";
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: var(--brown);
+    font-size: 9px; padding: 2px 8px; letter-spacing: 1.5px;
+    border: 2px solid var(--brown);
+  }
+  .sim-node .label {
+    font-size: 10.5px; color: var(--brown-light); letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .sim-node .name { font-size: 12.5px; font-weight: bold; margin-bottom: 8px; }
+  .sim-node .value {
+    font-size: 26px; font-weight: bold; color: var(--brown);
+    font-variant-numeric: tabular-nums;
+    transition: color 200ms;
+  }
+  .sim-node.pulse .value { color: var(--orange); }
+  .sim-node .unit {
+    font-size: 11px; color: var(--gray-700); margin-left: 4px;
+  }
+  .arrow {
+    text-align: center; color: var(--brown); font-size: 22px;
+    font-weight: bold;
+  }
+  .formula {
+    background: var(--brown); color: var(--ivory);
+    padding: 14px 18px; margin-top: 8px;
+    font-size: 12.5px; line-height: 1.8;
+  }
+  .formula .kw { color: var(--orange); }
+  .formula .str { color: var(--green-soft); }
+  .formula .com { color: var(--gray-300); font-style: italic; }
+  .sim-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ───── footer ───── */
+  footer {
+    text-align: center; padding: 32px 24px 48px;
+    color: var(--gray-700); font-size: 11px;
+    border-top: 3px dashed var(--brown); margin-top: 56px;
+  }
+  footer code {
+    background: var(--orange-soft); padding: 1px 6px;
+    border: 1px solid var(--orange); color: var(--brown);
+  }
+</style>
+</head>
+<body>
+
+<!-- ───── HERO ───── -->
+<header class="hero">
+  <div class="kicker">CASE STUDY · ANDROID</div>
+  <h1>"GPS 한 번 튀면 산책이 끝나버렸어요"</h1>
+  <p class="sub">
+    OneStep 산책 추적 기능 — Mapbox + Compose 환경에서 GPS 노이즈, 백그라운드 추적,
+    파생 상태 동기화를 어떻게 풀었는지 30초 데모.
+  </p>
+  <div class="stats">
+    <div class="stat"><div class="num">12</div><div class="lab">STATEFLOWS</div></div>
+    <div class="stat"><div class="num">4중</div><div class="lab">ARRIVAL GUARD</div></div>
+    <div class="stat"><div class="num">38</div><div class="lab">COMMITS</div></div>
+    <div class="stat"><div class="num">1.0</div><div class="lab">MVP SHIPPED</div></div>
+  </div>
+</header>
+
+<!-- ───── 1. 스크린샷 갤러리 ───── -->
+<section>
+  <div class="sec-head">
+    <div class="sec-tag">SECTION 01 · SCREENS</div>
+    <h2>실제 화면</h2>
+    <p>산책 추적, 실시간 챗(Fire), 마이룸, 편지함 — 픽셀아트 컨셉의 코지한 반려동물 챌린지 앱.</p>
+  </div>
+  <div class="gallery">
+    <figure class="phone">
+      <div class="notch"></div>
+      <div class="screen" data-slot="1">
+        <!-- 교체: <img src="screens/walk.png" alt="산책 화면"> -->
+        <div class="placeholder">📍<br/>WALK<br/>SCREEN</div>
+      </div>
+      <figcaption class="cap"><b>WALK</b>Mapbox로 경로 추적<br/>실시간 거리 · 속도 · 시간</figcaption>
+    </figure>
+    <figure class="phone">
+      <div class="notch"></div>
+      <div class="screen" data-slot="2">
+        <!-- 교체: <img src="screens/fire.png" alt="파이어챗"> -->
+        <div class="placeholder">🔥<br/>FIRE<br/>CHAT</div>
+      </div>
+      <figcaption class="cap"><b>FIRE</b>STOMP 실시간 챗<br/>유저당 버블 Lifecycle 관리</figcaption>
+    </figure>
+    <figure class="phone">
+      <div class="notch"></div>
+      <div class="screen" data-slot="3">
+        <!-- 교체: <img src="screens/myroom.png" alt="마이룸"> -->
+        <div class="placeholder">🏠<br/>MY<br/>ROOM</div>
+      </div>
+      <figcaption class="cap"><b>MY ROOM</b>레벨에 따라 진화하는<br/>반려동물 픽셀 캐릭터</figcaption>
+    </figure>
+    <figure class="phone">
+      <div class="notch"></div>
+      <div class="screen" data-slot="4">
+        <!-- 교체: <img src="screens/letter.png" alt="편지함"> -->
+        <div class="placeholder">✉️<br/>LETTER<br/>BOX</div>
+      </div>
+      <figcaption class="cap"><b>LETTER</b>STT 음성으로<br/>편지 작성</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ───── 2. GPS 노이즈 데모 ───── -->
+<section>
+  <div class="sec-head">
+    <div class="sec-tag">SECTION 02 · LIVE DEMO</div>
+    <h2>GPS 노이즈를 어떻게 길들였나</h2>
+    <p>버튼을 눌러 산책 한 번을 시뮬레이션해 보세요. 같은 데이터, 다른 결과.</p>
+  </div>
+
+  <div class="demo-card">
+    <div class="problem-quote">
+      <b>문제:</b> 산책 중 GPS가 한 번 튀면 → 폴리라인이 어지럽게 그려지고,
+      거리가 부풀어 오르고, <b>심지어 자동 도착 판정이 잘못 발동</b>해 산책이 끝나버렸습니다.
+      도메인 계층과 ViewModel에 4중 가드를 넣어 해결했어요.
+    </div>
+
+    <div class="gps-grid">
+      <div class="canvas-wrap raw">
+        <div class="title">
+          <span>📡 Raw GPS (FusedLocationProvider 원본)</span>
+          <span class="badge">UNFILTERED</span>
+        </div>
+        <canvas id="canvas-raw" width="500" height="240"></canvas>
+        <div class="meter">
+          <span>수신: <b id="raw-total">0</b></span>
+          <span>총거리: <b id="raw-dist">0.0</b>m</span>
+          <span style="color:var(--red)">도착 오판: <b id="raw-false">0</b>회</span>
+        </div>
+      </div>
+      <div class="canvas-wrap filtered">
+        <div class="title">
+          <span>✅ 4중 가드 통과</span>
+          <span class="badge">FILTERED</span>
+        </div>
+        <canvas id="canvas-filtered" width="500" height="240"></canvas>
+        <div class="meter">
+          <span>채택: <b id="flt-total">0</b></span>
+          <span>총거리: <b id="flt-dist">0.0</b>m</span>
+          <span style="color:var(--green)">도착 판정: <b id="flt-arrived">대기</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="btn-play">▶ 산책 재현</button>
+      <button class="btn ghost" id="btn-regen">🎲 노이즈 다시 뽑기</button>
+      <span style="color:var(--gray-700); font-size:11px;">
+        목적지에 도달하면 필터링 쪽만 정상 종료합니다.
+      </span>
+    </div>
+
+    <div class="constants">
+      <div class="title">▎ 적용된 가드 (WalkViewModel.kt &amp; TrackLocationUseCase.kt 실값)</div>
+      <table>
+        <tr>
+          <td class="k">accuracy &lt;</td>
+          <td class="v">20f</td>
+          <td class="d">— TrackLocationUseCase: GPS 정확도 20m 이상 폐기 (도메인 계층 필터)</td>
+        </tr>
+        <tr>
+          <td class="k">distance &lt;</td>
+          <td class="v">100m</td>
+          <td class="d">— 이전 포인트와 100m 이상 점프 시 누적에서 제외 (텔레포트 방어)</td>
+        </tr>
+        <tr>
+          <td class="k">ARRIVE_MAX_ACCURACY</td>
+          <td class="v">10f</td>
+          <td class="d">— 도착 판정은 더 엄격, 정확도 10m 이하만 인정</td>
+        </tr>
+        <tr>
+          <td class="k">ARRIVE_STABLE_COUNT</td>
+          <td class="v">3</td>
+          <td class="d">— 연속 3회 임계치 안에 들어와야 도착 확정</td>
+        </tr>
+        <tr>
+          <td class="k">DESTINATION_THRESHOLD</td>
+          <td class="v">20.0m</td>
+          <td class="d">— 목적지 반경 20m 이내</td>
+        </tr>
+        <tr>
+          <td class="k">ARRIVE_MIN_ELAPSED_MS</td>
+          <td class="v">3000ms</td>
+          <td class="d">— 시작 직후 GPS 안정화 시간 보장</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 3. StateFlow 시뮬레이터 ───── -->
+<section>
+  <div class="sec-head">
+    <div class="sec-tag">SECTION 03 · STATE DERIVATION</div>
+    <h2>평균 속도는 "들고 있는 상태"가 아니다</h2>
+    <p>
+      <code style="background:var(--orange-soft);padding:1px 6px;">averageSpeed</code>를 별도 변수로 관리하지 않고,
+      <code style="background:var(--orange-soft);padding:1px 6px;">combine</code>으로 두 StateFlow에서 파생.
+      ▶을 눌러 실시간 갱신을 보세요.
+    </p>
+  </div>
+
+  <div class="sim-card">
+    <div class="sim-flow">
+      <div class="sim-node raw" id="node-dist">
+        <div class="label">RAW · MutableStateFlow</div>
+        <div class="name">_totalDistance</div>
+        <div><span class="value" id="val-dist">0.0</span><span class="unit">m</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="sim-node raw" id="node-time">
+        <div class="label">RAW · MutableStateFlow</div>
+        <div class="name">_elapsedTime</div>
+        <div><span class="value" id="val-time">0</span><span class="unit">초</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="sim-node derived" id="node-speed">
+        <div class="label">combine · stateIn(Lazily)</div>
+        <div class="name">averageSpeed</div>
+        <div><span class="value" id="val-speed">0.00</span><span class="unit">km/h</span></div>
+      </div>
+    </div>
+
+    <pre class="formula"><span class="com">// WalkViewModel.kt — 별도 상태를 들지 않고, 두 흐름에서 파생</span>
+<span class="kw">val</span> averageSpeed: <span class="kw">StateFlow</span>&lt;<span class="kw">Double</span>&gt; = combine(
+    totalDistance, elapsedTime
+) { distance, time -&gt;
+    <span class="kw">if</span> (time &gt; 0) (distance / 1000.0) / (time / 3600.0) <span class="kw">else</span> 0.0
+}.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)</pre>
+
+    <div class="sim-controls" style="margin-top:14px;">
+      <button class="btn" id="btn-sim-play">▶ 산책 시작</button>
+      <button class="btn ghost" id="btn-sim-reset">⟲ 리셋</button>
+      <span style="color:var(--gray-700); font-size:11px;">
+        타이머가 매 초 +1, 거리가 임의 보폭으로 증가 → averageSpeed가 자동으로 따라옵니다.
+      </span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  OneStep · <code>S14P11A508/android</code> · 디자인 토큰은 <code>presentation/theme/Color.kt</code>에서 추출 ·
+  GPS 가드 수치는 <code>WalkViewModel.kt L85-89</code>, <code>TrackLocationUseCase.kt L14</code> 실값
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════
+   GPS 노이즈 데모
+   ════════════════════════════════════════════════════ */
+
+const GUARDS = {
+  ACCURACY_MAX_DOMAIN: 20,   // TrackLocationUseCase
+  ACCURACY_MAX_ARRIVE: 10,   // WalkViewModel.ARRIVE_MAX_ACCURACY
+  DIST_JUMP_MAX:       100,  // WalkViewModel: distance < 100
+  DEST_THRESHOLD:      20,   // WalkViewModel.DESTINATION_THRESHOLD
+  STABLE_COUNT:        3,    // WalkViewModel.ARRIVE_STABLE_COUNT
+};
+
+const rawCv  = document.getElementById("canvas-raw");
+const fltCv  = document.getElementById("canvas-filtered");
+const rawCtx = rawCv.getContext("2d");
+const fltCtx = fltCv.getContext("2d");
+
+// HiDPI 보정
+function fitCanvas(cv) {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = cv.getBoundingClientRect();
+  cv.width = rect.width * ratio;
+  cv.height = rect.height * ratio;
+  cv.getContext("2d").scale(ratio, ratio);
+  return { w: rect.width, h: rect.height };
+}
+let RAW_SIZE = fitCanvas(rawCv);
+let FLT_SIZE = fitCanvas(fltCv);
+window.addEventListener("resize", () => {
+  RAW_SIZE = fitCanvas(rawCv);
+  FLT_SIZE = fitCanvas(fltCv);
+  redrawStatic();
+});
+
+/**
+ * 진짜 경로(공원 산책로 같은 S커브) 생성
+ * @returns {Array<{x,y}>} 캔버스 좌표 기준 50개 포인트
+ */
+function generateTruePath(size) {
+  const pts = [];
+  const N = 60;
+  const padX = 30, padY = 40;
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    // S커브: x는 좌→우 선형, y는 sin 두 번
+    const x = padX + t * (size.w - 2 * padX);
+    const y = size.h / 2
+      + Math.sin(t * Math.PI * 1.8) * (size.h / 2 - padY) * 0.7
+      + (Math.random() - 0.5) * 0.5; // 미세 변동
+    pts.push({ x, y });
+  }
+  return pts;
+}
+
+/**
+ * 진짜 경로에 GPS 노이즈를 입힘
+ * - 대부분은 accuracy 좋음(2-8m)
+ * - 일정 확률로 accuracy 폭주(25-50m) → 큰 변위
+ * - 일정 확률로 텔레포트 점프(150-300px = 100m+ 가정)
+ */
+function addNoise(truePath) {
+  return truePath.map((p, i) => {
+    const r = Math.random();
+    let accuracy, jitter;
+    if (r < 0.15) {              // 15% 확률: accuracy 폭주
+      accuracy = 25 + Math.random() * 25;   // 25-50m
+      jitter = 20 + Math.random() * 25;
+    } else if (r < 0.20) {       // 5% 확률: 텔레포트
+      accuracy = 8 + Math.random() * 4;
+      jitter = 120 + Math.random() * 80;    // 100m+ 점프
+    } else {                     // 일반
+      accuracy = 2 + Math.random() * 6;
+      jitter = Math.random() * 4;
+    }
+    const angle = Math.random() * Math.PI * 2;
+    return {
+      x: p.x + Math.cos(angle) * jitter,
+      y: p.y + Math.sin(angle) * jitter,
+      accuracy,
+      trueX: p.x, trueY: p.y,
+      idx: i
+    };
+  });
+}
+
+// 캔버스 좌표 거리(px) — 데모에선 1px ≈ 1m로 간주
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+let TRUE_PATH = generateTruePath(RAW_SIZE);
+let NOISY     = addNoise(TRUE_PATH);
+let DEST      = TRUE_PATH[TRUE_PATH.length - 1];
+
+function drawGrid(ctx, size) {
+  ctx.clearRect(0, 0, size.w, size.h);
+  ctx.fillStyle = "#FFF7ED";
+  ctx.fillRect(0, 0, size.w, size.h);
+  ctx.strokeStyle = "#FFDEB8";
+  ctx.lineWidth = 1;
+  for (let x = 0; x < size.w; x += 20) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, size.h); ctx.stroke();
+  }
+  for (let y = 0; y < size.h; y += 20) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size.w, y); ctx.stroke();
+  }
+}
+
+function drawDestination(ctx, dest) {
+  // 도착 반경
+  ctx.strokeStyle = "#62A969";
+  ctx.setLineDash([4, 3]);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(dest.x, dest.y, GUARDS.DEST_THRESHOLD, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // 도착 깃발
+  ctx.fillStyle = "#62A969";
+  ctx.beginPath();
+  ctx.arc(dest.x, dest.y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#5C4742";
+  ctx.font = "10px monospace";
+  ctx.fillText("🏁", dest.x - 6, dest.y - 8);
+}
+
+function drawTrueGhost(ctx) {
+  ctx.strokeStyle = "rgba(160,160,160,0.4)";
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([2, 3]);
+  ctx.beginPath();
+  TRUE_PATH.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function redrawStatic() {
+  drawGrid(rawCtx, RAW_SIZE);
+  drawTrueGhost(rawCtx);
+  drawDestination(rawCtx, DEST);
+  drawGrid(fltCtx, FLT_SIZE);
+  drawTrueGhost(fltCtx);
+  drawDestination(fltCtx, DEST);
+}
+redrawStatic();
+
+/* 재현 애니메이션 */
+let playToken = 0;
+async function play() {
+  const myToken = ++playToken;
+  redrawStatic();
+
+  const elRawTotal = document.getElementById("raw-total");
+  const elRawDist  = document.getElementById("raw-dist");
+  const elRawFalse = document.getElementById("raw-false");
+  const elFltTotal = document.getElementById("flt-total");
+  const elFltDist  = document.getElementById("flt-dist");
+  const elFltArr   = document.getElementById("flt-arrived");
+
+  let rawCount = 0, rawDist = 0, rawFalse = 0;
+  let fltCount = 0, fltDist = 0;
+  let stableCount = 0, arrived = false;
+
+  let prevRaw = null;
+  let prevFlt = null;
+  let arrivedTime = null;
+
+  for (let i = 0; i < NOISY.length; i++) {
+    if (myToken !== playToken) return; // 중간 취소
+
+    const p = NOISY[i];
+
+    /* ── 좌: Raw ── */
+    rawCount++;
+    if (prevRaw) {
+      const d = dist(prevRaw, p);
+      rawDist += d;
+      // raw 라인
+      rawCtx.strokeStyle = "#E53935";
+      rawCtx.lineWidth = 1.8;
+      rawCtx.beginPath();
+      rawCtx.moveTo(prevRaw.x, prevRaw.y);
+      rawCtx.lineTo(p.x, p.y);
+      rawCtx.stroke();
+    }
+    // raw 도착 오판: 정확도/가드 없이 거리만 봄
+    if (dist(p, DEST) <= GUARDS.DEST_THRESHOLD) rawFalse++;
+    // raw 점
+    rawCtx.fillStyle = p.accuracy > 20 ? "#E53935" : "#FFA94D";
+    rawCtx.beginPath();
+    rawCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    rawCtx.fill();
+    prevRaw = p;
+
+    /* ── 우: Filtered (4중 가드) ── */
+    let accept = true;
+    // 가드 1: TrackLocationUseCase — accuracy < 20m
+    if (p.accuracy >= GUARDS.ACCURACY_MAX_DOMAIN) accept = false;
+    let jumped = false;
+    // 가드 2: distance < 100m (텔레포트 컷)
+    if (accept && prevFlt && dist(prevFlt, p) >= GUARDS.DIST_JUMP_MAX) {
+      jumped = true; accept = false;
+    }
+    if (accept) {
+      fltCount++;
+      if (prevFlt) {
+        const d = dist(prevFlt, p);
+        fltDist += d;
+        fltCtx.strokeStyle = "#62A969";
+        fltCtx.lineWidth = 2;
+        fltCtx.beginPath();
+        fltCtx.moveTo(prevFlt.x, prevFlt.y);
+        fltCtx.lineTo(p.x, p.y);
+        fltCtx.stroke();
+      }
+      fltCtx.fillStyle = "#62A969";
+      fltCtx.beginPath();
+      fltCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+      fltCtx.fill();
+
+      // 도착 가드: accuracy < 10 AND 거리 < 20 AND 연속 3회
+      if (!arrived
+          && p.accuracy < GUARDS.ACCURACY_MAX_ARRIVE
+          && dist(p, DEST) <= GUARDS.DEST_THRESHOLD) {
+        stableCount++;
+        if (stableCount >= GUARDS.STABLE_COUNT) {
+          arrived = true;
+          arrivedTime = i;
+        }
+      } else if (dist(p, DEST) > GUARDS.DEST_THRESHOLD) {
+        stableCount = 0;
+      }
+      prevFlt = p;
+    } else {
+      // 폐기된 점을 흐리게 표시
+      fltCtx.fillStyle = "rgba(229,57,53,0.25)";
+      fltCtx.beginPath();
+      fltCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      fltCtx.fill();
+    }
+
+    /* 카운터 갱신 */
+    elRawTotal.textContent = rawCount;
+    elRawDist.textContent  = rawDist.toFixed(1);
+    elRawFalse.textContent = rawFalse;
+    elFltTotal.textContent = fltCount;
+    elFltDist.textContent  = fltDist.toFixed(1);
+    elFltArr.textContent   = arrived ? `✓ ${arrivedTime}번째 샘플` : (stableCount > 0 ? `대기 (${stableCount}/${GUARDS.STABLE_COUNT})` : "대기");
+
+    await sleep(40);
+    if (arrived) {
+      // 도착 마커 펄스
+      fltCtx.strokeStyle = "#62A969";
+      fltCtx.lineWidth = 3;
+      fltCtx.beginPath();
+      fltCtx.arc(DEST.x, DEST.y, GUARDS.DEST_THRESHOLD + 4, 0, Math.PI * 2);
+      fltCtx.stroke();
+      break;
+    }
+  }
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+document.getElementById("btn-play").addEventListener("click", play);
+document.getElementById("btn-regen").addEventListener("click", () => {
+  playToken++; // 진행 중 취소
+  TRUE_PATH = generateTruePath(RAW_SIZE);
+  NOISY     = addNoise(TRUE_PATH);
+  DEST      = TRUE_PATH[TRUE_PATH.length - 1];
+  redrawStatic();
+  ["raw-total","raw-dist","raw-false","flt-total","flt-dist"].forEach(id =>
+    document.getElementById(id).textContent = id.endsWith("dist") ? "0.0" : "0"
+  );
+  document.getElementById("flt-arrived").textContent = "대기";
+});
+
+/* ════════════════════════════════════════════════════
+   StateFlow 파생 시뮬레이터
+   ════════════════════════════════════════════════════ */
+
+let simTimer = null;
+let simDistance = 0; // m
+let simTime = 0;     // s
+
+const elDist  = document.getElementById("val-dist");
+const elTime  = document.getElementById("val-time");
+const elSpeed = document.getElementById("val-speed");
+const nodeDist  = document.getElementById("node-dist");
+const nodeTime  = document.getElementById("node-time");
+const nodeSpeed = document.getElementById("node-speed");
+
+function pulse(node) {
+  node.classList.add("pulse");
+  setTimeout(() => node.classList.remove("pulse"), 180);
+}
+
+function render() {
+  elDist.textContent  = simDistance.toFixed(1);
+  elTime.textContent  = simTime;
+  // 실제 WalkViewModel 공식: (distance/1000) / (time/3600) km/h
+  const speed = simTime > 0 ? (simDistance / 1000) / (simTime / 3600) : 0;
+  elSpeed.textContent = speed.toFixed(2);
+  pulse(nodeSpeed); // 파생값은 항상 펄스 (combine 트리거 시각화)
+}
+render();
+
+function tick() {
+  // 1초마다 시간 +1, 거리 +(1.0~1.8m 보폭 * 4걸음 ≈ 4-7m/s 산책)
+  simTime += 1;
+  pulse(nodeTime);
+  // 산책 평속 ~5km/h → ~1.4m/s. 데모 임팩트 위해 4-7m/s 사용
+  const step = 4 + Math.random() * 3;
+  simDistance += step;
+  pulse(nodeDist);
+  render();
+}
+
+document.getElementById("btn-sim-play").addEventListener("click", (e) => {
+  if (simTimer) {
+    clearInterval(simTimer); simTimer = null;
+    e.target.textContent = "▶ 산책 시작";
+  } else {
+    simTimer = setInterval(tick, 1000);
+    e.target.textContent = "⏸ 일시정지";
+  }
+});
+document.getElementById("btn-sim-reset").addEventListener("click", () => {
+  clearInterval(simTimer); simTimer = null;
+  document.getElementById("btn-sim-play").textContent = "▶ 산책 시작";
+  simDistance = 0; simTime = 0; render();
+});
+</script>
+
+</body>
+</html>
