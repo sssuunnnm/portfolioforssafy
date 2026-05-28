@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>raon_trip · 기술적 판단 둘러보기</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --line: #ececec;
+    --chip: #E8E8E8;
+    --ink: #1c1c1c;
+    --ink-2: #555;
+    --ink-3: #8a8a8a;
+    --accent: #2f6f5e;     /* 차분한 한국 청록(여행 톤) */
+    --accent-soft: #e3efe9;
+    --warn: #c25b3f;
+    --warn-soft: #f5e2db;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+                 "Malgun Gothic", "Nanum Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+  }
+
+  /* ===== 헤더 ===== */
+  header.intro { margin-bottom: 56px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 800;
+  }
+  h1 {
+    font-size: 38px; font-weight: 800; margin: 10px 0 14px;
+    letter-spacing: -0.02em;
+  }
+  .sub { color: var(--ink-2); font-size: 16px; line-height: 1.7; max-width: 720px; }
+  .tags { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    font-size: 12px; padding: 6px 12px; border-radius: 999px;
+    background: var(--chip); color: var(--ink-2); font-weight: 700;
+  }
+
+  /* ===== 모듈 카드 ===== */
+  .module {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-top: 32px;
+  }
+  .module-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .module h2 {
+    font-size: 22px; font-weight: 800; margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .module .meta { font-size: 12px; color: var(--ink-3); font-weight: 700; }
+  .module .lead {
+    color: var(--ink-2); font-size: 14px; line-height: 1.7; margin: 8px 0 24px;
+  }
+
+  /* ===== 흐름 단계 ===== */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .step {
+    cursor: pointer;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 14px 14px 16px;
+    transition: all 0.18s ease;
+    position: relative;
+    user-select: none;
+  }
+  .step:hover { transform: translateY(-1px); border-color: #d0d0d0; }
+  .step.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px -8px rgba(47,111,94,0.5);
+  }
+  .step .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--chip); color: var(--ink-2);
+    font-size: 11px; font-weight: 800; margin-bottom: 10px;
+  }
+  .step.active .n { background: var(--accent); color: white; }
+  .step .label { font-size: 13px; font-weight: 800; letter-spacing: -0.01em; }
+  .step .sublabel { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+
+  /* 연결선 */
+  .flow-arrows {
+    position: relative; height: 0;
+  }
+
+  /* ===== 패널 ===== */
+  .panel {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 22px;
+    margin-top: 8px;
+  }
+  .panel .narrative {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 22px;
+    min-height: 280px;
+  }
+  .panel .narrative h3 {
+    font-size: 13px; margin: 0 0 8px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--accent); font-weight: 800;
+  }
+  .panel .narrative p {
+    font-size: 14px; line-height: 1.75; color: var(--ink); margin: 0 0 12px;
+  }
+  .panel .narrative ul {
+    margin: 8px 0 12px; padding-left: 18px;
+    font-size: 13.5px; line-height: 1.75; color: var(--ink-2);
+  }
+  .badge {
+    display: inline-block; font-size: 11px; padding: 4px 10px;
+    border-radius: 999px; font-weight: 800; letter-spacing: 0.04em;
+    background: var(--warn-soft); color: var(--warn);
+    margin-right: 6px;
+  }
+  .badge.good { background: var(--accent-soft); color: var(--accent); }
+
+  /* 코드 블록 */
+  .code-wrap {
+    background: #1d1f1e;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid #2a2d2c;
+    min-height: 280px;
+    display: flex; flex-direction: column;
+  }
+  .code-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: #232625;
+    border-bottom: 1px solid #2a2d2c;
+    font-size: 11px; color: #b8bdbb; font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #4a4d4c; }
+  .dot.r { background: #d86d5c; } .dot.y { background: #d8c45c; } .dot.g { background: #6dc28a; }
+  .code-head .file { margin-left: 8px; }
+  pre {
+    margin: 0; padding: 16px 18px;
+    font-family: "SF Mono", "JetBrains Mono", Consolas, Menlo, monospace;
+    font-size: 12.5px; line-height: 1.65;
+    color: #e3e4e2; overflow-x: auto; flex: 1;
+  }
+  .hl-key { color: #e3a76e; }      /* dart keyword */
+  .hl-cls { color: #98c8e0; }      /* class */
+  .hl-str { color: #c4d68f; }      /* string */
+  .hl-com { color: #6f7370; font-style: italic; }
+  .hl-fn  { color: #f5d987; }
+  .hl-mark { background: rgba(245,217,135,0.18); border-left: 2px solid #f5d987; padding-left: 6px; margin-left: -8px; }
+
+  /* ===== 푸터 ===== */
+  footer.outro {
+    text-align: center; margin-top: 64px; color: var(--ink-3); font-size: 12px;
+  }
+  footer.outro b { color: var(--ink-2); font-weight: 800; }
+
+  @media (max-width: 760px) {
+    .flow { grid-template-columns: repeat(2, 1fr); }
+    .panel { grid-template-columns: 1fr; }
+    h1 { font-size: 28px; }
+    .module { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="intro">
+    <div class="eyebrow">PORTFOLIO · CASE STUDY</div>
+    <h1>raon_trip — 두 개의 작은 결정 뒤에 있던 큰 트레이드오프</h1>
+    <p class="sub">
+      라온트립은 한국 관광지를 추천하는 Flutter 앱입니다.
+      이 문서는 코드를 늘어놓는 대신, <b>"왜 그렇게 만들었는가"</b>를 두 모듈을 통해 따라가 봅니다.
+      단계를 클릭하면 그 시점의 고민과 코드를 함께 보여줍니다.
+    </p>
+    <div class="tags">
+      <span class="tag">Flutter</span>
+      <span class="tag">Dart</span>
+      <span class="tag">Android · iOS</span>
+      <span class="tag">UX 결정</span>
+      <span class="tag">외부 라이브러리 제약</span>
+    </div>
+  </header>
+
+  <!-- ====================== MODULE 1 ====================== -->
+  <section class="module" data-mod="m1">
+    <div class="module-head">
+      <div>
+        <h2>① 안드로이드 뒤로가기 가로채기 — 종료 다이얼로그</h2>
+        <div class="meta">lib/main.dart · WillPopScope + showDialog</div>
+      </div>
+      <span class="badge good">프레임워크 깊은 디버깅</span>
+    </div>
+    <p class="lead">
+      "사용자가 홈에서 뒤로가기를 한 번 누르면 앱이 그냥 꺼지는 게 맞을까?"
+      플랫폼 기본 동작을 그대로 두면 UX는 단순해지지만, 비즈니스 요구(광고 노출·이탈 방지)는 만족시킬 수 없습니다.
+    </p>
+
+    <div class="flow" data-flow="m1">
+      <div class="step active" data-step="0">
+        <span class="n">1</span>
+        <div class="label">문제 상황</div>
+        <div class="sublabel">기본 뒤로가기 = 즉시 종료</div>
+      </div>
+      <div class="step" data-step="1">
+        <span class="n">2</span>
+        <div class="label">선택지</div>
+        <div class="sublabel">3가지 접근</div>
+      </div>
+      <div class="step" data-step="2">
+        <span class="n">3</span>
+        <div class="label">선택 이유</div>
+        <div class="sublabel">WillPopScope 채택</div>
+      </div>
+      <div class="step" data-step="3">
+        <span class="n">4</span>
+        <div class="label">결과</div>
+        <div class="sublabel">광고 + 의도적 이탈 확인</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="narrative" data-narrative="m1">
+        <!-- JS 채움 -->
+      </div>
+      <div class="code-wrap">
+        <div class="code-head">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="file" data-file="m1">lib/main.dart</span>
+        </div>
+        <pre data-code="m1"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== MODULE 2 ====================== -->
+  <section class="module" data-mod="m2">
+    <div class="module-head">
+      <div>
+        <h2>② Kakao Map 통합 포기 → 정적 지도 폴백</h2>
+        <div class="meta">pubspec.yaml · lib/info.dart · android/app/libs/</div>
+      </div>
+      <span class="badge">외부 제약 해결</span>
+    </div>
+    <p class="lead">
+      관광지 상세 페이지에는 "지도"가 필요했습니다. 하지만 카카오맵 Flutter 플러그인은 한국 특유의 외부 SDK 의존(libDaumMapAndroid.jar)과
+      iOS 미지원 등 제약이 컸고, 결국 <b>정적 이미지로 폴백</b>하는 결정을 내렸습니다.
+    </p>
+
+    <div class="flow" data-flow="m2">
+      <div class="step active" data-step="0">
+        <span class="n">1</span>
+        <div class="label">문제 상황</div>
+        <div class="sublabel">한국 지도 → Google 안 됨</div>
+      </div>
+      <div class="step" data-step="1">
+        <span class="n">2</span>
+        <div class="label">선택지</div>
+        <div class="sublabel">SDK·WebView·정적</div>
+      </div>
+      <div class="step" data-step="2">
+        <span class="n">3</span>
+        <div class="label">선택 이유</div>
+        <div class="sublabel">MVP 우선, 부채 기록</div>
+      </div>
+      <div class="step" data-step="3">
+        <span class="n">3</span>
+        <div class="label">결과</div>
+        <div class="sublabel">map.png + 흔적 보존</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="narrative" data-narrative="m2"></div>
+      <div class="code-wrap">
+        <div class="code-head">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="file" data-file="m2">pubspec.yaml</span>
+        </div>
+        <pre data-code="m2"></pre>
+      </div>
+    </div>
+  </section>
+
+  <footer class="outro">
+    <p><b>raon_trip</b> · Flutter 2.x · Dart 2.19 · 단일 HTML 케이스 스터디 · vanilla JS</p>
+  </footer>
+</div>
+
+<script>
+/* ===========================================================
+   콘텐츠 데이터
+   =========================================================== */
+const DATA = {
+  m1: {
+    file: 'lib/main.dart',
+    steps: [
+      {
+        narrative: `
+          <h3>문제 상황</h3>
+          <p>홈 화면에서 사용자가 안드로이드 <b>뒤로가기 버튼</b>을 누르면 Flutter 기본 동작상 그대로 앱이 종료됩니다.</p>
+          <ul>
+            <li>의도하지 않은 이탈이 잦음 (실수 터치, 멀티태스킹)</li>
+            <li>이탈 직전 광고·재참여 유도 지점이 비어 있음</li>
+            <li>아이폰에는 물리 뒤로가기가 없어 형평성 이슈도 존재</li>
+          </ul>
+          <p>플랫폼이 정한 동작을 그대로 받아들일지, 가로챌지의 문제.</p>`,
+        code: codeM1Step0,
+        file: 'lib/main.dart  (기본 동작)'
+      },
+      {
+        narrative: `
+          <h3>선택지</h3>
+          <p>고려한 세 가지:</p>
+          <ul>
+            <li><b>A. 그대로 둔다</b> — UX 단순, 그러나 비즈니스 요구 불충족</li>
+            <li><b>B. <code>SystemNavigator.pop()</code>을 가로채는 네이티브 채널 작성</b> — 강력하지만 iOS/Android 코드 양쪽 필요</li>
+            <li><b>C. <code>WillPopScope</code>로 라우트 단위에서 가로채기</b> — 순수 Dart, Flutter 라우팅 트리에 통합</li>
+          </ul>
+          <p>네이티브 채널 방식은 "한 화면에만 적용"이 어렵고, 다이얼로그를 띄우려면 BuildContext가 필요해서 결국 위젯 트리로 돌아옵니다.</p>`,
+        code: codeM1Step1,
+        file: 'lib/main.dart  (선택지 비교)'
+      },
+      {
+        narrative: `
+          <h3>선택 이유 — WillPopScope</h3>
+          <p><b>WillPopScope</b>를 Scaffold의 부모로 감싸 라우트 pop 시점을 <code>Future&lt;bool&gt;</code>로 가로챕니다.</p>
+          <ul>
+            <li>홈 라우트에만 적용되므로 검색·상세 화면의 뒤로가기는 평소대로 동작</li>
+            <li>다이얼로그 안에서 <code>Navigator.of(context).pop(true/false)</code>로 사용자 의사를 그대로 반환</li>
+            <li><code>?? false</code>로 다이얼로그가 닫혀 <code>null</code>이 와도 안전</li>
+          </ul>
+          <p>핵심은 "<b>플랫폼 동작을 끈 게 아니라, 위젯 트리에 의사결정을 위임했다</b>"는 점입니다.</p>`,
+        code: codeM1Step2,
+        file: 'lib/main.dart : _onWillPop()'
+      },
+      {
+        narrative: `
+          <h3>결과</h3>
+          <p>뒤로가기 시 광고 이미지 + "라온트립을 종료하시겠습니까?" 다이얼로그.
+            의도된 이탈만 시스템 종료로 이어집니다.</p>
+          <ul>
+            <li>광고 슬롯 1개 확보 (이탈 직전 = 노출 가치 높음)</li>
+            <li>실수 종료 방지</li>
+            <li>다이얼로그 닫기(close 아이콘) = 이전 상태로 복귀하여 UX 안전망 제공</li>
+          </ul>
+          <p>코드는 30줄 남짓, 네이티브 코드는 0줄. 이게 Flutter 위젯 트리의 깊이를 활용한 방식입니다.</p>`,
+        code: codeM1Step3,
+        file: 'lib/main.dart : WillPopScope 적용'
+      }
+    ]
+  },
+  m2: {
+    file: 'pubspec.yaml',
+    steps: [
+      {
+        narrative: `
+          <h3>문제 상황</h3>
+          <p>관광지 상세 페이지에 위치를 보여줘야 합니다. 그런데 한국 시장에서는:</p>
+          <ul>
+            <li>Google Maps는 한국 지형/도로 데이터 제한으로 실용성이 낮음</li>
+            <li>국내 사용자는 카카오맵/네이버맵에 익숙</li>
+            <li>Flutter는 공식적으로 한국 지도 SDK 플러그인을 지원하지 않음</li>
+          </ul>
+          <p>"한국 사용자에게 익숙한 지도"라는 요구와 "Flutter 생태계의 제약" 사이의 간극.</p>`,
+        code: codeM2Step0,
+        file: 'lib/info.dart  (지도가 필요한 자리)'
+      },
+      {
+        narrative: `
+          <h3>선택지</h3>
+          <p>세 가지 경로를 검토:</p>
+          <ul>
+            <li><b>A. <code>flutter_kakao_map</code> 플러그인</b> — 비공식, 마지막 업데이트 오래됨, iOS 지원 빈약, Daum Map .jar 수동 배치 필요</li>
+            <li><b>B. WebView로 카카오맵 JS API 임베드</b> — 동작하지만 인증키 노출/스크롤 충돌/네이티브 제스처 손실</li>
+            <li><b>C. 정적 지도 이미지(스냅샷)</b> — 인터랙션 없음, 그러나 0의존성·0크래시</li>
+          </ul>
+          <p>실제로 A를 먼저 시도한 흔적이 남아 있습니다 — <code>pubspec.yaml</code>의 <code>flutter_kakao_map: ^0.0.4</code>, <code>android/app/libs/libDaumMapAndroid.jar</code>, 소스의 주석 처리된 import들.</p>`,
+        code: codeM2Step1,
+        file: 'pubspec.yaml  (시도의 흔적)'
+      },
+      {
+        narrative: `
+          <h3>선택 이유 — 정적 이미지 폴백</h3>
+          <p>MVP 단계에서 "기능이 부족한 게" 아니라 "<b>크래시 나는 게</b>" 더 큰 문제라고 판단했습니다.</p>
+          <ul>
+            <li>플러그인 SDK 버전 충돌 → 빌드 자체가 깨짐 (실제로 <code>flutter_kakao_map</code>이 pubspec의 environment 위쪽, 잘못된 위치에 적힌 흔적이 디버깅 단계를 보여줌)</li>
+            <li>iOS에서 지원 안 되면 단일 코드베이스의 의미가 사라짐</li>
+            <li>관광지 정보는 <b>위치 텍스트 + 지도 미리보기</b>면 1차 가치 전달 충분</li>
+          </ul>
+          <p>대신 의존성 흔적을 <b>지우지 않고 남겨</b> 다음 단계에서 누가 작업하든 맥락을 이어받을 수 있게 했습니다.</p>`,
+        code: codeM2Step2,
+        file: 'lib/info.dart : 정적 map.png'
+      },
+      {
+        narrative: `
+          <h3>결과</h3>
+          <p>상세 페이지는 200px 높이의 <code>map.png</code>을 렌더링하고, 인터랙티브 지도는 v2의 과제로 미뤘습니다.</p>
+          <ul>
+            <li>크래시 0 / 빌드 안정 ✓</li>
+            <li>iOS·Android 동일 경험 ✓</li>
+            <li>핀치 줌·경로 검색은 불가 — <span class="badge">기술 부채로 명시</span></li>
+          </ul>
+          <p>"<b>완벽한 솔루션을 늦게 내는 것보다, 명시적인 폴백을 빨리 내는 것</b>"이 이 단계의 정답이었습니다.
+            플러그인 import는 코드에 주석으로 남아있어 v2에서 정확히 같은 자리에서 재개할 수 있습니다.</p>`,
+        code: codeM2Step3,
+        file: 'lib/info.dart  (현재 상태)'
+      }
+    ]
+  }
+};
+
+/* ===========================================================
+   코드 스니펫 (간단한 dart 하이라이팅을 인라인 span으로)
+   =========================================================== */
+
+function codeM1Step0() { return `<span class="hl-com">// Flutter 기본 동작: 라우트가 1개뿐일 때
+// 안드로이드 뒤로가기는 OS에 SystemNavigator.pop()
+// 을 위임 → 그대로 앱 종료.</span>
+
+<span class="hl-key">void</span> <span class="hl-fn">main</span>() {
+  <span class="hl-fn">runApp</span>(<span class="hl-cls">MaterialApp</span>(
+    home: <span class="hl-cls">MyThreeLayerScreen</span>(),
+  ));
+}
+
+<span class="hl-com">// 결과: 사용자는 "한 번 누르면 끝".
+// 광고/이탈방지 훅을 끼울 자리가 없다.</span>`; }
+
+function codeM1Step1() { return `<span class="hl-com">// A. 그대로 둔다  → 코드 변경 0줄, UX 위험 ↑</span>
+
+<span class="hl-com">// B. 네이티브 채널 방식 (Android 측)</span>
+<span class="hl-cls">MethodChannel</span>(<span class="hl-str">"app/back"</span>).<span class="hl-fn">setMethodCallHandler</span>((c) {
+  <span class="hl-com">// onBackPressed를 가로채려면 MainActivity 수정 필요
+  // → iOS에는 해당 없음, 화면 단위 적용도 어려움</span>
+});
+
+<span class="hl-com">// C. WillPopScope — Dart 한 곳에서 라우트 pop 가로채기</span>
+<span class="hl-cls">WillPopScope</span>(
+  onWillPop: _onWillPop,   <span class="hl-com">// Future&lt;bool&gt; 반환</span>
+  child: <span class="hl-cls">Scaffold</span>(...),
+);`; }
+
+function codeM1Step2() { return `<span class="hl-cls">Future</span>&lt;<span class="hl-key">bool</span>&gt; <span class="hl-fn">_onWillPop</span>() <span class="hl-key">async</span> {
+<span class="hl-mark">  <span class="hl-key">return</span> (<span class="hl-key">await</span> <span class="hl-fn">showDialog</span>(
+    context: context,
+    builder: (context) =&gt; <span class="hl-cls">AlertDialog</span>(
+      title: <span class="hl-cls">Align</span>(
+        alignment: <span class="hl-cls">AlignmentDirectional</span>.topEnd,
+        child: <span class="hl-cls">IconButton</span>(
+          icon: <span class="hl-cls">Image</span>.<span class="hl-fn">asset</span>(<span class="hl-str">'assets/images/close.png'</span>),
+          onPressed: () =&gt; <span class="hl-cls">Navigator</span>.<span class="hl-fn">of</span>(context).<span class="hl-fn">pop</span>(<span class="hl-key">false</span>),
+        ),
+      ),
+      content: <span class="hl-cls">Column</span>( ... ),  <span class="hl-com">// 광고 + 안내문</span>
+      actions: [
+        <span class="hl-cls">TextButton</span>(
+          onPressed: () =&gt; <span class="hl-cls">Navigator</span>.<span class="hl-fn">of</span>(context).<span class="hl-fn">pop</span>(<span class="hl-key">true</span>),
+          child: <span class="hl-cls">Text</span>(<span class="hl-str">'종료'</span>),
+        ),
+      ],
+    ),
+  )) ?? <span class="hl-key">false</span>;  <span class="hl-com">// 다이얼로그 dismiss → 종료하지 않음</span></span>
+}`; }
+
+function codeM1Step3() { return `<span class="hl-key">@override</span>
+<span class="hl-cls">Widget</span> <span class="hl-fn">build</span>(<span class="hl-cls">BuildContext</span> context) {
+<span class="hl-mark">  <span class="hl-key">return</span> <span class="hl-cls">WillPopScope</span>(
+    onWillPop: _onWillPop,
+    child: <span class="hl-cls">Scaffold</span>(
+      body: <span class="hl-cls">Column</span>(
+        children: [
+          <span class="hl-com">// 1. 타이틀 + 검색/메뉴 아이콘</span>
+          <span class="hl-com">// 2. 외국인 인기 명소 (가로 스크롤)</span>
+          <span class="hl-com">// 3. 내국인 인기 명소 (가로 스크롤)</span>
+        ],
+      ),
+    ),
+  );</span>
+}
+
+<span class="hl-com">// → 홈에서만 가로채고, 검색/상세 화면은
+//    스택에 쌓이므로 기본 pop 동작 유지.</span>`; }
+
+function codeM2Step0() { return `<span class="hl-com">// lib/info.dart — 관광지 상세
+// "여기에 지도가 필요하다"는 자리</span>
+
+<span class="hl-cls">Container</span>(
+  width: <span class="hl-key">double</span>.infinity,
+  height: <span class="hl-cls">200</span>,
+  decoration: <span class="hl-cls">BoxDecoration</span>(
+<span class="hl-mark">    image: <span class="hl-cls">DecorationImage</span>(
+      image: <span class="hl-cls">AssetImage</span>(<span class="hl-str">'assets/images/map.png'</span>),
+      fit: <span class="hl-cls">BoxFit</span>.cover,
+    ),</span>
+  ),
+),
+
+<span class="hl-com">// 처음엔 여기에 KakaoMap 위젯을 넣으려 했다.</span>`; }
+
+function codeM2Step1() { return `<span class="hl-com"># pubspec.yaml — 시도의 흔적이 남아있음</span>
+version: <span class="hl-str">1.0.0+1</span>
+<span class="hl-mark">flutter_kakao_map: ^<span class="hl-str">0.0.4</span>   <span class="hl-com"># ← environment 위에 잘못 위치한 흔적
+                            #   (의존성으로 인식되지 않음)</span></span>
+environment:
+  sdk: <span class="hl-str">'&gt;=2.19.6 &lt;3.0.0'</span>
+
+<span class="hl-com">// lib/main.dart 의 흔적</span>
+<span class="hl-mark"><span class="hl-com">//import 'package:flutter_kakao_map/flutter_kakao_map.dart';
+//import 'package:flutter_kakao_map/kakao_maps_flutter_platform_interface.dart';</span></span>
+
+<span class="hl-com">// android/app/libs/libDaumMapAndroid.jar
+//   ← 네이티브 SDK 수동 반입까지 시도했던 흔적</span>`; }
+
+function codeM2Step2() { return `<span class="hl-com">// 결정: 정적 이미지 폴백
+// 이유:
+//  - 빌드 안정성 우선 (크래시 &gt; 기능 부족)
+//  - iOS/Android 동일 경험 보장
+//  - v2에서 재개할 수 있도록 흔적은 남긴다</span>
+
+<span class="hl-cls">Container</span>(
+  width: <span class="hl-key">double</span>.infinity,
+  height: <span class="hl-cls">200</span>,
+  decoration: <span class="hl-cls">BoxDecoration</span>(
+    image: <span class="hl-cls">DecorationImage</span>(
+<span class="hl-mark">      image: <span class="hl-cls">AssetImage</span>(<span class="hl-str">'assets/images/map.png'</span>),</span>
+      fit: <span class="hl-cls">BoxFit</span>.cover,
+    ),
+  ),
+),
+
+<span class="hl-com">// + 주소 텍스트로 위치 정보의 1차 가치는 전달
+//   "경기도 용인시 처인구 포곡읍 에버랜드로 199"</span>`; }
+
+function codeM2Step3() { return `<span class="hl-com">// 현재 상태: 명시적 폴백 + 기술 부채 표면화</span>
+
+<span class="hl-com">// 1) info.dart 의 지도 영역</span>
+<span class="hl-cls">DecorationImage</span>(
+  image: <span class="hl-cls">AssetImage</span>(<span class="hl-str">'assets/images/map.png'</span>),
+  fit: <span class="hl-cls">BoxFit</span>.cover,
+),
+
+<span class="hl-com">// 2) 주석 처리된 import — v2의 entry point</span>
+<span class="hl-com">//import 'package:flutter_kakao_map/flutter_kakao_map.dart';</span>
+
+<span class="hl-com">// 3) 다음 단계 후보
+//    - WebView + Kakao JS API + 인증키 환경변수화
+//    - 네이버 지도 공식 Flutter SDK 출시 대기
+//    - 자체 타일 서버로 OSM 한국 데이터 호스팅</span>
+
+<span class="hl-com">// 핵심: "왜 못 했는지"가 코드에 남아있다.</span>`; }
+
+/* ===========================================================
+   인터랙션
+   =========================================================== */
+function render(modId, stepIdx) {
+  const mod = DATA[modId];
+  const step = mod.steps[stepIdx];
+  const narrEl = document.querySelector(`[data-narrative="${modId}"]`);
+  const codeEl = document.querySelector(`[data-code="${modId}"]`);
+  const fileEl = document.querySelector(`[data-file="${modId}"]`);
+
+  // fade
+  narrEl.style.opacity = 0; codeEl.style.opacity = 0;
+  setTimeout(() => {
+    narrEl.innerHTML = step.narrative;
+    codeEl.innerHTML = step.code();
+    fileEl.textContent = step.file || mod.file;
+    narrEl.style.opacity = 1; codeEl.style.opacity = 1;
+  }, 120);
+
+  // step states
+  document.querySelectorAll(`[data-flow="${modId}"] .step`).forEach(el => {
+    el.classList.toggle('active', Number(el.dataset.step) === stepIdx);
+  });
+}
+
+document.querySelectorAll('.module').forEach(mod => {
+  const modId = mod.dataset.mod;
+  // 초기 렌더
+  render(modId, 0);
+  // 클릭 핸들러
+  mod.querySelectorAll('.step').forEach(stepEl => {
+    stepEl.addEventListener('click', () => {
+      render(modId, Number(stepEl.dataset.step));
+    });
+  });
+});
+
+// 부드러운 전환을 위한 transition 적용
+document.querySelectorAll('[data-narrative], [data-code]').forEach(el => {
+  el.style.transition = 'opacity 0.16s ease';
+});
+
+// 키보드 화살표로 단계 이동 (포커스된 모듈)
+document.addEventListener('keydown', e => {
+  if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+  const active = document.querySelector('.step.active');
+  if (!active) return;
+  const flow = active.closest('.flow');
+  const steps = [...flow.querySelectorAll('.step')];
+  const cur = steps.indexOf(active);
+  const next = e.key === 'ArrowRight'
+    ? Math.min(steps.length - 1, cur + 1)
+    : Math.max(0, cur - 1);
+  const modId = flow.dataset.flow;
+  render(modId, next);
+});
+</script>
+</body>
+</html>
