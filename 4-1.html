@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가배추 · 설계 판단 인터랙티브</title>
+<style>
+  :root{
+    --green:#7cb342;
+    --green-l:#9fc93c;
+    --green-d:#558b2f;
+    --green-soft:rgba(124,179,66,.10);
+    --green-line:rgba(124,179,66,.30);
+    --ink:#2c2c2c;
+    --purple:#5e4a8c;
+    --purple-l:#8a76b8;
+    --bg:#ffffff;
+    --panel:#fafbf7;
+    --code-bg:#1f2a18;
+    --code-fg:#e8f3da;
+    --gray:#8a8f82;
+    --shadow:0 4px 16px rgba(105,147,6,.18);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"Noto Sans CJK KR","Noto Sans KR","Malgun Gothic",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+
+  /* ---------- Header ---------- */
+  header.top{
+    text-align:center;
+    padding:54px 0 30px;
+    border-bottom:1px solid var(--green-line);
+    background:
+      radial-gradient(900px 300px at 50% -120px, var(--green-soft), transparent 70%);
+  }
+  .logo{
+    font-size:46px;font-weight:800;letter-spacing:6px;
+    color:var(--green-d);
+  }
+  .logo .leaf{color:var(--green-l);}
+  .tagline{color:var(--purple);margin-top:10px;font-size:16px;letter-spacing:1px;}
+  .subline{color:var(--gray);font-size:13.5px;margin-top:4px;}
+  .lead{
+    max-width:760px;margin:26px auto 4px;color:#4a4f44;font-size:15.5px;
+  }
+  .lead b{color:var(--green-d);}
+
+  /* ---------- Module nav ---------- */
+  .modnav{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:30px 0 8px;}
+  .modnav a{
+    text-decoration:none;color:var(--ink);font-size:14px;
+    border:1px solid var(--green-line);border-radius:22px;
+    padding:9px 20px;transition:.25s;background:#fff;
+  }
+  .modnav a:hover{background:var(--green);color:#fff;box-shadow:var(--shadow);}
+
+  /* ---------- Module card ---------- */
+  .module{margin:46px 0;}
+  .mod-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .mod-no{
+    font-size:13px;font-weight:700;color:#fff;background:var(--green);
+    border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto;
+  }
+  .mod-title{font-size:25px;font-weight:800;color:var(--ink);margin:0;}
+  .mod-badge{
+    font-size:12px;color:var(--green-d);background:var(--green-soft);
+    border:1px solid var(--green-line);border-radius:14px;padding:3px 12px;
+  }
+  .mod-sub{color:var(--gray);font-size:13.5px;margin:2px 0 0 44px;}
+
+  .panel{
+    margin-top:20px;border:1px solid var(--green-line);border-radius:18px;
+    overflow:hidden;background:var(--panel);box-shadow:0 8px 30px rgba(80,110,40,.06);
+  }
+
+  /* ---------- Stepper ---------- */
+  .stepper{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-bottom:1px solid var(--green-line);}
+  .step{
+    border:none;background:transparent;cursor:pointer;
+    padding:16px 10px 14px;text-align:center;position:relative;
+    font-family:inherit;transition:.2s;border-right:1px solid var(--green-line);
+  }
+  .step:last-child{border-right:none;}
+  .step:hover{background:var(--green-soft);}
+  .step .k{font-size:11px;color:var(--gray);letter-spacing:1px;display:block;}
+  .step .t{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:3px;display:block;}
+  .step.active{background:var(--green);}
+  .step.active .k{color:rgba(255,255,255,.8);}
+  .step.active .t{color:#fff;}
+  .step .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--green-line);
+    position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  }
+  .step.active .dot{background:#fff;}
+
+  /* ---------- Body split ---------- */
+  .body{display:grid;grid-template-columns:1fr 1fr;min-height:340px;}
+  @media(max-width:820px){.body{grid-template-columns:1fr;}}
+  .narrative{padding:26px 26px 30px;border-right:1px solid var(--green-line);}
+  @media(max-width:820px){.narrative{border-right:none;border-bottom:1px solid var(--green-line);}}
+  .stage-tag{font-size:12px;font-weight:700;color:var(--green-d);letter-spacing:1.5px;}
+  .stage-h{font-size:19px;font-weight:800;margin:8px 0 12px;color:var(--ink);}
+  .stage-p{font-size:14.5px;color:#454a3f;margin:0 0 14px;}
+  .stage-p b{color:var(--green-d);}
+
+  /* option chips */
+  .opts{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+  .opt{
+    border:1px solid var(--green-line);border-radius:12px;background:#fff;
+    padding:12px 14px;cursor:pointer;transition:.2s;text-align:left;font-family:inherit;
+  }
+  .opt:hover{border-color:var(--green);box-shadow:var(--shadow);}
+  .opt .ot{font-weight:700;font-size:14px;color:var(--ink);display:flex;justify-content:space-between;align-items:center;}
+  .opt .verdict{font-size:11px;padding:2px 9px;border-radius:10px;}
+  .v-no{background:#fdecea;color:#b3261e;}
+  .v-yes{background:var(--green-soft);color:var(--green-d);border:1px solid var(--green-line);}
+  .opt .od{font-size:13px;color:var(--gray);margin-top:6px;display:none;}
+  .opt.open{border-color:var(--green);background:var(--green-soft);}
+  .opt.open .od{display:block;}
+
+  /* result metrics */
+  .metrics{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .metric{
+    flex:1 1 120px;border:1px solid var(--green-line);border-radius:12px;
+    padding:12px 14px;background:#fff;
+  }
+  .metric .mv{font-size:22px;font-weight:800;color:var(--green-d);}
+  .metric .ml{font-size:12px;color:var(--gray);margin-top:2px;}
+
+  /* ---------- Code panel ---------- */
+  .codewrap{background:var(--code-bg);padding:0;display:flex;flex-direction:column;}
+  .codebar{
+    display:flex;align-items:center;gap:7px;padding:11px 16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .codebar .fn{font-size:12px;color:#b8d49a;font-family:ui-monospace,Menlo,Consolas,monospace;margin-left:6px;}
+  .codebar .cdot{width:11px;height:11px;border-radius:50%;}
+  .cd1{background:#ff5f57;}.cd2{background:#febc2e;}.cd3{background:#28c840;}
+  pre{
+    margin:0;padding:18px 18px 22px;overflow:auto;flex:1;
+    font-family:ui-monospace,Menlo,Consolas,"D2Coding",monospace;
+    font-size:12.6px;line-height:1.7;color:var(--code-fg);
+  }
+  .cm{color:#7fa86a;font-style:italic;}      /* comment */
+  .kw{color:#c3e88d;}                          /* keyword */
+  .fnc{color:#82d4ff;}                         /* function */
+  .st{color:#f6c177;}                          /* string/num */
+  .hl{background:rgba(124,179,66,.22);border-left:2px solid var(--green-l);padding-left:6px;margin-left:-8px;display:block;}
+
+  .hint{font-size:12px;color:var(--gray);text-align:center;padding:12px;background:#fff;border-top:1px solid var(--green-line);}
+  .hint b{color:var(--green-d);}
+
+  footer{
+    text-align:center;padding:40px 0 60px;color:var(--gray);font-size:13px;
+    border-top:1px solid var(--green-line);margin-top:50px;
+  }
+  footer .gh{color:var(--green-d);text-decoration:none;}
+  .nav-btn{
+    display:inline-block;margin-top:14px;border:none;border-radius:20px;
+    background:var(--green);color:#fff;font-family:inherit;font-size:13px;
+    padding:9px 22px;cursor:pointer;box-shadow:var(--shadow);transition:.25s;
+  }
+  .nav-btn:hover{background:var(--green-l);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">가배<span class="leaf">🥬</span>추</div>
+  <div class="tagline">왜 이렇게 설계했는가 — 설계 판단 들여다보기</div>
+  <div class="subline">단국대 컴퓨터공학과 캡스톤디자인 · 가구 배치 추천 시스템 · 2021</div>
+  <p class="lead">
+    가배추는 사용자 정보와 방의 고정 구조(화장실·주방 위치)를 입력받아
+    <b>최적의 가구 배치를 추천</b>하는 Django 시스템입니다.
+    구현 과정에서 마주친 두 개의 벽 — <b>추천 데이터의 부재</b>와
+    <b>이미지 라이브러리의 한계</b> — 을 어떻게 우회했는지,
+    각 단계를 클릭하며 따라가 보세요.
+  </p>
+  <nav class="modnav">
+    <a href="#mod1">① 추천 엔진 · 콜드스타트 우회</a>
+    <a href="#mod2">② 배열→이미지 합성기</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ MODULE 1 ============ -->
+  <section class="module" id="mod1">
+    <div class="mod-head">
+      <span class="mod-no">1</span>
+      <h2 class="mod-title">추천 엔진 — 콜드스타트 우회</h2>
+      <span class="mod-badge">외부 제약 해결</span>
+    </div>
+    <div class="mod-sub">algorithm.py · main.py <code>grouping()</code> · <code>tagging()</code> · <code>pic()</code></div>
+
+    <div class="panel" data-mod="1">
+      <div class="stepper">
+        <button class="step active" data-stage="0"><span class="dot"></span><span class="k">STEP 1</span><span class="t">문제 상황</span></button>
+        <button class="step" data-stage="1"><span class="dot"></span><span class="k">STEP 2</span><span class="t">선택지</span></button>
+        <button class="step" data-stage="2"><span class="dot"></span><span class="k">STEP 3</span><span class="t">선택 이유</span></button>
+        <button class="step" data-stage="3"><span class="dot"></span><span class="k">STEP 4</span><span class="t">결과</span></button>
+      </div>
+      <div class="body">
+        <div class="narrative" data-role="narr"></div>
+        <div class="codewrap">
+          <div class="codebar"><span class="cdot cd1"></span><span class="cdot cd2"></span><span class="cdot cd3"></span><span class="fn" data-role="fn"></span></div>
+          <pre data-role="code"></pre>
+        </div>
+      </div>
+      <div class="hint">상단 <b>단계</b>를 클릭하거나, STEP 2에서 <b>선택지 카드</b>를 눌러 비교해 보세요.</div>
+    </div>
+  </section>
+
+  <!-- ============ MODULE 2 ============ -->
+  <section class="module" id="mod2">
+    <div class="mod-head">
+      <span class="mod-no">2</span>
+      <h2 class="mod-title">배열 → 이미지 합성기</h2>
+      <span class="mod-badge">라이브러리 한계 우회</span>
+    </div>
+    <div class="mod-sub">main.py <code>show_image1()</code> · numpy + Pillow(PIL)</div>
+
+    <div class="panel" data-mod="2">
+      <div class="stepper">
+        <button class="step active" data-stage="0"><span class="dot"></span><span class="k">STEP 1</span><span class="t">문제 상황</span></button>
+        <button class="step" data-stage="1"><span class="dot"></span><span class="k">STEP 2</span><span class="t">선택지</span></button>
+        <button class="step" data-stage="2"><span class="dot"></span><span class="k">STEP 3</span><span class="t">선택 이유</span></button>
+        <button class="step" data-stage="3"><span class="dot"></span><span class="k">STEP 4</span><span class="t">결과</span></button>
+      </div>
+      <div class="body">
+        <div class="narrative" data-role="narr"></div>
+        <div class="codewrap">
+          <div class="codebar"><span class="cdot cd1"></span><span class="cdot cd2"></span><span class="cdot cd3"></span><span class="fn" data-role="fn"></span></div>
+          <pre data-role="code"></pre>
+        </div>
+      </div>
+      <div class="hint">STEP 3에서는 <b>2D 배열이 어떻게 가구 크기로 역산되는지</b> 시각화됩니다.</div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  가배추 (말하는 감자 🥔) · Dongwoo Kim · YeonHong Kim · YuBeen Kim · Sunmin Lee<br>
+  <a class="gh" href="https://github.com/sssuunnnm/capstonedesign2021" target="_blank" rel="noopener">github.com/sssuunnnm/capstonedesign2021</a>
+</footer>
+
+<script>
+/* ---------- syntax highlight helper ---------- */
+function hl(src){
+  // escape
+  let s = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return s;
+}
+
+/* ---------- content for each module ---------- */
+const DATA = {
+  1: {
+    fn: "algorithm.py",
+    stages: [
+      { // 문제 상황
+        tag:"STEP 1 · 문제 상황",
+        h:"추천할 근거 데이터가 없다",
+        html:`<p class="stage-p">목표는 "사용자에게 <b>가장 잘 맞는 배치</b>를 추천"하는 것.
+          교과서적 정답은 <b>협업 필터링(Collaborative Filtering)</b> — 사용자×아이템 평점 행렬에서
+          코사인 유사도를 구해 비슷한 취향을 찾는 방식입니다.</p>
+          <p class="stage-p">하지만 신규 서비스라 <b>평점 데이터가 거의 없었습니다.</b>
+          평점 행렬의 대부분이 비어 있는(<code>NaN</code>) 전형적인
+          <b>콜드스타트(cold-start)</b> 상황. 유사도를 구해도 신뢰할 수 없었죠.</p>`,
+        fn:"algorithm.py",
+        code:
+`<span class="cm"># 평점 행렬을 만들어 코사인 유사도를 시도</span>
+piv = merged.<span class="fnc">pivot_table</span>(
+        index=[<span class="st">'user_id'</span>],
+        columns=[<span class="st">'name'</span>],
+        values=<span class="st">'user_rating'</span>)
+
+<span class="cm"># 정규화 후 빈 칸은 0으로 — 그런데 빈 칸이 너무 많다</span>
+piv_norm = piv.<span class="fnc">apply</span>(<span class="kw">lambda</span> x:(x-mean)/(max-min), axis=<span class="st">1</span>)
+piv_norm.<span class="fnc">fillna</span>(<span class="st">0</span>, inplace=<span class="kw">True</span>)
+
+<span class="hl">item_similarity = <span class="fnc">cosine_similarity</span>(piv_sparse)  <span class="cm"># 데이터 희소 → 신뢰 불가</span></span>`
+      },
+      { // 선택지
+        tag:"STEP 2 · 선택지",
+        h:"세 갈래 길",
+        html:`<p class="stage-p">콜드스타트 앞에서 가능한 선택지를 비교했습니다.
+          각 카드를 눌러 장단점을 확인하세요.</p>
+          <div class="opts">
+            <button class="opt" data-od="협업필터링을 그대로 밀어붙이면 데이터가 쌓이기 전까지 추천 품질이 무작위에 가깝다. 데모/발표 시점에 작동하지 않는다.">
+              <span class="ot">A. 협업 필터링 고수 <span class="verdict v-no">기각</span></span>
+              <span class="od"></span></button>
+            <button class="opt" data-od="외부 가구 추천 데이터셋이나 API가 마땅치 않고, 방 구조(화장실·주방 위치)라는 우리 고유의 입력을 반영하지 못한다.">
+              <span class="ot">B. 외부 데이터셋 수집 <span class="verdict v-no">기각</span></span>
+              <span class="od"></span></button>
+            <button class="opt" data-od="방의 고정 구조를 소수의 이산 카테고리(그룹·태그)로 인코딩하면, 데이터 없이도 결정론적으로 후보를 고를 수 있다. 이후 모이는 평점으로 재정렬하면 협업필터링으로 자연스럽게 진화한다.">
+              <span class="ot">C. 규칙 기반 인코딩 + 평점 re-rank <span class="verdict v-yes">채택</span></span>
+              <span class="od"></span></button>
+          </div>`,
+        fn:"main.py · grouping()",
+        code:
+`<span class="cm"># 방의 '구조'를 데이터 없이 분류하는 규칙</span>
+<span class="kw">def</span> <span class="fnc">grouping</span>(list_a):       <span class="cm"># 화장실이 어느 모서리에 있나</span>
+    <span class="kw">if</span> list_a[<span class="st">0</span>] == <span class="st">1</span>:  value = <span class="st">1</span>
+    <span class="kw">if</span> list_a[<span class="st">0</span>] == <span class="st">5</span>:  value = <span class="st">2</span>
+    <span class="kw">if</span> list_a[<span class="st">0</span>] == <span class="st">21</span>: value = <span class="st">3</span>
+    <span class="kw">if</span> list_a[<span class="st">0</span>] == <span class="st">25</span>: value = <span class="st">4</span>
+    <span class="kw">return</span> value      <span class="cm"># 4개의 방 '그룹'으로 압축</span>`
+      },
+      { // 선택 이유
+        tag:"STEP 3 · 선택 이유",
+        h:"구조를 좌표가 아닌 '범주'로 바꾼다",
+        html:`<p class="stage-p">핵심 통찰: 방의 정답 배치를 결정하는 건 픽셀 좌표가 아니라
+          <b>화장실과 주방이 어디에 붙어 있는가</b>라는 위상(topology)입니다.</p>
+          <p class="stage-p"><code>grouping()</code> 이 화장실 위치를 <b>4개 그룹</b>으로,
+          <code>tagging()</code> 이 주방 위치를 그룹별 <b>6개 태그</b>로 인코딩합니다.
+          → 연속 좌표 공간이 <b>(그룹, 태그) = 24개의 이산 케이스</b>로 줄어들고,
+          각 케이스마다 <b>사전에 디자인한 배치 이미지 풀</b>을 매핑해 두면
+          <b>평점 0개여도</b> 결정론적으로 추천이 나옵니다.</p>
+          <p class="stage-p">그리고 데이터가 쌓이면 <code>pic()</code> 이 <b>평점으로 상위 3개를 재정렬</b> —
+          규칙 기반에서 협업 필터링으로 매끄럽게 진화하는 경로를 남겨 둔 설계입니다.</p>`,
+        fn:"main.py · tagging()",
+        code:
+`<span class="cm"># 그룹이 정해지면, 주방 위치로 세부 '태그' 결정</span>
+<span class="kw">def</span> <span class="fnc">tagging</span>(list_a, groupvalue):
+    <span class="kw">if</span> groupvalue == <span class="st">3</span>:
+        <span class="kw">if</span> list_a == [<span class="st">1</span>, <span class="st">2</span>]:   tagvalue = <span class="st">1</span>
+        <span class="kw">if</span> list_a == [<span class="st">1</span>, <span class="st">6</span>]:   tagvalue = <span class="st">2</span>
+        <span class="kw">if</span> list_a == [<span class="st">4</span>, <span class="st">5</span>]:   tagvalue = <span class="st">3</span>
+        <span class="hl">    ...                <span class="cm"># (그룹,태그) → 24개 이산 케이스</span></span>
+    <span class="kw">return</span> tagvalue`
+      },
+      { // 결과
+        tag:"STEP 4 · 결과",
+        h:"데이터 0개에서도 추천이 작동",
+        html:`<p class="stage-p"><code>pic(group, tag)</code> 는 (그룹·태그)로 사전 렌더된 이미지 풀을 가리킨 뒤,
+          모인 평점(<code>Testrate</code>)을 한 번 훑어 <b>상위 3개를 재정렬</b>해 사용자에게 보여줍니다.</p>
+          <div class="metrics">
+            <div class="metric"><div class="mv">24</div><div class="ml">이산 배치 케이스 (그룹×태그)</div></div>
+            <div class="metric"><div class="mv">0</div><div class="ml">추천에 필요한 최소 평점 수</div></div>
+            <div class="metric"><div class="mv">Top 3</div><div class="ml">평점 피드백 기반 re-rank</div></div>
+          </div>
+          <p class="stage-p" style="margin-top:16px;">결과적으로 <b>발표 시점부터 즉시 동작</b>하면서도,
+          평점이 쌓일수록 추천이 개선되는 <b>점진적 학습 경로</b>를 확보했습니다.</p>`,
+        fn:"main.py · pic()",
+        code:
+`<span class="cm"># (그룹,태그) → 사전 렌더 이미지 풀 선택</span>
+list_a = random.<span class="fnc">sample</span>(<span class="fnc">range</span>(<span class="st">1</span>,<span class="st">4</span>), <span class="st">1</span>)
+<span class="kw">if</span> groupvalue == <span class="st">1</span> <span class="kw">and</span> tagvalue == <span class="st">1</span>:
+    picnum1 = list_a[<span class="st">0</span>]; picnum2 = picnum1+<span class="st">1</span>; picnum3 = picnum2+<span class="st">1</span>
+
+<span class="cm"># 평점 피드백으로 상위 3개 재정렬 → CF로 진화하는 경로</span>
+<span class="kw">for</span> obj <span class="kw">in</span> testrate:
+<span class="hl">    <span class="kw">if</span> rating &lt; obj.rating:</span>
+        rating = obj.rating; picnum1 = obj.picturenum`
+      }
+    ]
+  },
+
+  2: {
+    fn:"main.py · show_image1()",
+    stages:[
+      { // 문제
+        tag:"STEP 1 · 문제 상황",
+        h:"배열은 있는데, 그림이 없다",
+        html:`<p class="stage-p">배치 알고리즘의 출력은 <b>20×20 numpy 배열</b>입니다.
+          각 칸에는 가구 코드(침대=1, 책상=2 …)가 채워져 있죠.
+          이걸 사람이 보는 <b>평면도 이미지</b>로 바꿔야 합니다.</p>
+          <p class="stage-p">문제는 Pillow(PIL)에는 <b>"격자 셀" 이라는 개념이 없다</b>는 것.
+          PIL은 그저 "이 픽셀 좌표에 이 이미지를 붙여라"만 압니다.
+          정작 우리가 아는 건 "배열의 몇 번 칸"일 뿐 —
+          <b>가구가 몇 칸을 차지하는지, 픽셀로 어디인지</b>를 PIL은 알려주지 않습니다.</p>`,
+        fn:"main.py · show_image1()",
+        code:
+`<span class="cm"># 입력: 가구 코드가 채워진 20x20 배열</span>
+array1 = [[<span class="st">0</span>,<span class="st">0</span>,<span class="st">1</span>,<span class="st">1</span>,...],
+          [<span class="st">0</span>,<span class="st">0</span>,<span class="st">1</span>,<span class="st">1</span>,...],   <span class="cm"># 1 = 침대가 차지한 칸</span>
+          ...]
+
+<span class="cm"># 원하는 출력: 침대 이미지가 올바른 크기·위치로</span>
+<span class="cm"># 붙은 평면도 PNG</span>
+<span class="hl">back.<span class="fnc">paste</span>(furniture_img, (?, ?))  <span class="cm"># 좌표·크기를 어떻게 구하지?</span></span>`
+      },
+      { // 선택지
+        tag:"STEP 2 · 선택지",
+        h:"세 갈래 길",
+        html:`<p class="stage-p">배열을 그림으로 바꾸는 방법을 비교했습니다. 카드를 눌러보세요.</p>
+          <div class="opts">
+            <button class="opt" data-od="가구마다 픽셀 좌표/크기를 손으로 적어두면 배치 알고리즘을 바꿀 때마다 전부 다시 계산해야 한다. 자동 배치와 모순된다.">
+              <span class="ot">A. 좌표를 직접 하드코딩 <span class="verdict v-no">기각</span></span>
+              <span class="od"></span></button>
+            <button class="opt" data-od="matplotlib imshow로 색 블록은 쉽지만, 실제 가구 이미지(침대/책상 PNG)를 셀 크기에 맞춰 합성하긴 까다롭고 결과물이 도면답지 않다.">
+              <span class="ot">B. matplotlib 컬러맵으로 표시 <span class="verdict v-no">기각</span></span>
+              <span class="od"></span></button>
+            <button class="opt" data-od="np.where로 같은 코드의 좌표 군집을 뽑고, 같은 행/열의 개수를 세어 가구의 칸 크기를 역산한다. 배율 s를 곱하면 PIL이 모르는 '셀→픽셀' 변환이 완성된다. 배치가 바뀌어도 자동으로 따라온다.">
+              <span class="ot">C. np.where + 셀 카운트로 크기 역산 <span class="verdict v-yes">채택</span></span>
+              <span class="od"></span></button>
+          </div>`,
+        fn:"main.py · show_image1()",
+        code:
+`<span class="cm"># 같은 가구 코드(i)가 박힌 모든 좌표를 한 번에 추출</span>
+<span class="hl">arridx = np.<span class="fnc">where</span>(array1 == i)</span>
+<span class="cm"># arridx[0] = 행 인덱스들, arridx[1] = 열 인덱스들</span>
+
+a = <span class="fnc">int</span>(arridx[<span class="st">0</span>][<span class="st">0</span>])   <span class="cm"># 가구의 시작 행</span>
+b = <span class="fnc">int</span>(arridx[<span class="st">1</span>][<span class="st">0</span>])   <span class="cm"># 가구의 시작 열</span>`
+      },
+      { // 이유
+        tag:"STEP 3 · 선택 이유",
+        h:"칸의 개수가 곧 가구의 크기다",
+        html:`<p class="stage-p">PIL이 모르는 정보를 numpy로 <b>역산</b>합니다.
+          <code>np.where(array1==i)</code> 가 같은 코드의 좌표를 모두 뱉으면,
+          <b>시작 행(<code>a</code>)과 같은 값이 몇 번 나오는지</b> 세어 가로 칸 수를,
+          <b>시작 열(<code>b</code>)이 몇 번 나오는지</b> 세어 세로 칸 수를 구합니다.</p>
+          <p class="stage-p">그리고 <b>배율 <code>s = 이미지크기 ÷ 배열크기</code></b> 한 줄로
+          "셀 좌표 → 픽셀 좌표" 변환이 완성됩니다.
+          이제 PIL은 그저 <code>resize</code> 후 <code>paste</code> 만 하면 됩니다.</p>
+          <div style="border:1px solid var(--green-line);border-radius:12px;padding:14px;background:#fff;margin-top:6px;">
+            <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">배열 → 크기 역산 (셀 클릭으로 시뮬레이션)</div>
+            <div id="grid2" style="display:grid;grid-template-columns:repeat(6,30px);gap:3px;"></div>
+            <div id="grid2out" style="font-size:13px;margin-top:10px;color:var(--green-d);font-weight:700;">가구 칸을 클릭해 보세요</div>
+          </div>`,
+        fn:"main.py · show_image1()",
+        code:
+`<span class="cm"># 시작 행 a 와 같은 행 인덱스 개수 → 가로 칸 수</span>
+count = <span class="st">0</span>
+<span class="kw">for</span> j <span class="kw">in</span> arridx[<span class="st">0</span>]:
+    <span class="kw">if</span> arridx[<span class="st">0</span>][<span class="st">0</span>] == j: count += <span class="st">1</span>
+f_size_x = count
+
+<span class="cm"># 시작 열 b 와 같은 열 인덱스 개수 → 세로 칸 수</span>
+ycount = <span class="st">0</span>
+<span class="kw">for</span> j <span class="kw">in</span> arridx[<span class="st">1</span>]:
+    <span class="kw">if</span> arridx[<span class="st">1</span>][<span class="st">0</span>] == j: ycount += <span class="st">1</span>
+f_size_y = ycount
+
+<span class="hl">s = image_size // array_size   <span class="cm"># 셀 1칸 = 픽셀 배율</span></span>`
+      },
+      { // 결과
+        tag:"STEP 4 · 결과",
+        h:"배치가 바뀌어도 그림이 따라온다",
+        html:`<p class="stage-p">역산한 크기에 배율을 곱해 가구 이미지를 <code>resize</code> 하고,
+          시작 좌표 <code>(b·s, a·s)</code> 에 <code>paste</code> 합니다.
+          배치 알고리즘이 만든 <b>어떤 배열이 들어와도</b> 좌표·크기를 자동으로 맞추므로,
+          알고리즘과 렌더러가 완전히 분리됩니다.</p>
+          <div class="metrics">
+            <div class="metric"><div class="mv">0</div><div class="ml">하드코딩한 픽셀 좌표</div></div>
+            <div class="metric"><div class="mv">1줄</div><div class="ml">셀→픽셀 변환 (배율 s)</div></div>
+            <div class="metric"><div class="mv">N×N</div><div class="ml">임의 배열 크기 대응</div></div>
+          </div>
+          <p class="stage-p" style="margin-top:16px;">결과적으로 numpy의 좌표 연산이 PIL의 빈자리를 메워,
+          <b>"배열만 주면 평면도가 나오는"</b> 재사용 가능한 렌더러가 됐습니다.</p>`,
+        fn:"main.py · show_image1()",
+        code:
+`<span class="cm"># 셀 좌표 → 픽셀 좌표</span>
+y = a * s
+x = b * s
+
+<span class="cm"># 칸 수 x 배율 = 실제 픽셀 크기로 리사이즈</span>
+draw = furniture_image.<span class="fnc">resize</span>((s * f_size_x, s * f_size_y))
+
+<span class="hl">back.<span class="fnc">paste</span>(draw, (x, y))   <span class="cm"># numpy가 구한 좌표에 PIL이 붙인다</span></span>
+back.<span class="fnc">save</span>(background)`
+      }
+    ]
+  }
+};
+
+/* ---------- render engine ---------- */
+function render(panel, modId, stageIdx){
+  const d = DATA[modId].stages[stageIdx];
+  panel.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('active', i===stageIdx));
+  const narr = panel.querySelector('[data-role=narr]');
+  narr.innerHTML = `<div class="stage-tag">${d.tag}</div><div class="stage-h">${d.h}</div>${d.html}`;
+  panel.querySelector('[data-role=fn]').textContent = d.fn;
+  panel.querySelector('[data-role=code]').innerHTML = d.code;
+
+  // wire option chips
+  narr.querySelectorAll('.opt').forEach(opt=>{
+    opt.querySelector('.od').textContent = opt.dataset.od;
+    opt.addEventListener('click',()=>{
+      const wasOpen = opt.classList.contains('open');
+      narr.querySelectorAll('.opt').forEach(o=>o.classList.remove('open'));
+      if(!wasOpen) opt.classList.add('open');
+    });
+  });
+
+  // module 2 stage 3: interactive grid
+  if(modId===2 && stageIdx===2){ buildGrid(narr); }
+}
+
+/* ---------- module 2 grid simulation ---------- */
+function buildGrid(narr){
+  const grid = narr.querySelector('#grid2');
+  const out  = narr.querySelector('#grid2out');
+  if(!grid) return;
+  // 6x6 demo array: bed(1)=2x3 block, closet(3)=1x2 block
+  const arr = [
+    [0,0,1,1,1,0],
+    [0,0,1,1,1,0],
+    [0,0,0,0,0,0],
+    [3,3,0,0,0,0],
+    [0,0,0,0,0,0],
+    [0,0,0,0,0,0],
+  ];
+  const colors = {0:'#f3f5ef',1:'#9fc93c',3:'#82d4ff'};
+  const names  = {1:'침대(코드1)',3:'옷장(코드3)'};
+  grid.innerHTML='';
+  for(let r=0;r<6;r++)for(let c=0;c<6;c++){
+    const cell=document.createElement('div');
+    const v=arr[r][c];
+    cell.style.cssText=`height:30px;border-radius:5px;background:${colors[v]};cursor:${v?'pointer':'default'};border:1px solid rgba(0,0,0,.06);`;
+    cell.dataset.v=v;
+    if(v) cell.addEventListener('click',()=>{
+      // count block size by np.where logic
+      let rows=new Set(),cols=new Set();
+      for(let rr=0;rr<6;rr++)for(let cc=0;cc<6;cc++)
+        if(arr[rr][cc]===v){rows.add(rr);cols.add(cc);}
+      const h=rows.size, w=cols.size;
+      const a=Math.min(...rows), b=Math.min(...cols), s=50;
+      out.innerHTML=`${names[v]} → np.where 좌표 군집 추출<br>`+
+        `세로 ${h}칸 × 가로 ${w}칸 · 시작(행 ${a}, 열 ${b}) `+
+        `→ paste 픽셀 (${b*s}, ${a*s}), 크기 ${w*s}×${h*s}px`;
+    });
+    grid.appendChild(cell);
+  }
+}
+
+/* ---------- init ---------- */
+document.querySelectorAll('.panel').forEach(panel=>{
+  const modId=+panel.dataset.mod;
+  panel.querySelectorAll('.step').forEach(step=>{
+    step.addEventListener('click',()=>render(panel,modId,+step.dataset.stage));
+  });
+  render(panel,modId,0);
+});
+</script>
+</body>
+</html>

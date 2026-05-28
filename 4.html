@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가배추 · 포트폴리오 쇼케이스</title>
+<style>
+  :root{
+    --green:#7cb342; --green-l:#9fc93c; --green-d:#558b2f;
+    --green-soft:rgba(124,179,66,.10); --green-line:rgba(124,179,66,.30);
+    --ink:#2c2c2c; --purple:#5e4a8c; --bg:#ffffff; --panel:#fafbf7;
+    --gray:#8a8f82; --red:#e05d4e; --red-soft:#fdecea;
+    --shadow:0 4px 16px rgba(105,147,6,.18);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:"Noto Sans CJK KR","Noto Sans KR","Malgun Gothic",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px;}
+  h2.sec{font-size:13px;letter-spacing:2px;color:var(--green-d);font-weight:800;
+    margin:0 0 4px;text-transform:uppercase;}
+  .sec-title{font-size:24px;font-weight:800;margin:0 0 22px;color:var(--ink);}
+
+  /* hero */
+  header.top{text-align:center;padding:56px 0 26px;border-bottom:1px solid var(--green-line);
+    background:radial-gradient(900px 320px at 50% -120px,var(--green-soft),transparent 70%);}
+  .logo{font-size:48px;font-weight:800;letter-spacing:6px;color:var(--green-d);}
+  .logo .leaf{color:var(--green-l);}
+  .tagline{color:var(--purple);margin-top:10px;font-size:16px;}
+  .pitch{max-width:720px;margin:20px auto 0;color:#4a4f44;font-size:15.5px;}
+  .pitch b{color:var(--green-d);}
+  .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:22px 0 4px;}
+  .chip{font-size:12.5px;border:1px solid var(--green-line);border-radius:18px;padding:6px 15px;
+    color:var(--ink);background:#fff;}
+  .chip b{color:var(--green-d);}
+
+  section{padding:50px 0;}
+  section + section{border-top:1px solid var(--green-line);}
+
+  /* gallery */
+  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+  .shot{border:1px solid var(--green-line);border-radius:16px;overflow:hidden;background:#fff;
+    box-shadow:0 8px 26px rgba(80,110,40,.06);transition:.25s;display:flex;flex-direction:column;}
+  .shot:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(80,110,40,.14);}
+  .shot .frame{position:relative;aspect-ratio:4/3;background:#fff;overflow:hidden;
+    border-bottom:1px solid var(--green-line);}
+  .shot .mock{position:absolute;inset:0;padding:14px;display:flex;flex-direction:column;}
+  .shot .badge{position:absolute;bottom:8px;right:10px;font-size:9px;letter-spacing:1px;
+    color:var(--gray);background:rgba(255,255,255,.85);border:1px solid var(--green-line);
+    border-radius:8px;padding:1px 7px;}
+  /* mock primitives */
+  .mlogo{font-size:13px;font-weight:800;color:var(--green-d);letter-spacing:1px;}
+  .mlogo .lf{color:var(--green-l);}
+  .mbar{height:7px;border-radius:4px;background:#eef3e4;margin:5px 0;}
+  .mbtn{background:var(--green);color:#fff;font-size:9px;font-weight:700;border-radius:12px;
+    padding:5px 0;text-align:center;}
+  .minput{border:1px solid var(--green-line);border-radius:6px;height:16px;background:#fafbf7;margin:4px 0;}
+  .mlabel{font-size:8.5px;color:var(--gray);margin-top:5px;}
+  .mradio{display:flex;gap:5px;margin-top:3px;}
+  .mradio span{flex:1;border:1px solid var(--green-line);border-radius:10px;font-size:8px;
+    text-align:center;padding:3px 0;color:var(--ink);background:#fafbf7;}
+  .mradio span.sel{background:var(--green);color:#fff;border-color:var(--green);}
+  /* room grid mock (5x5 selectable) */
+  .mroom{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:6px;flex:1;}
+  .mroom div{background:#f4f7ef;border-radius:2px;}
+  .mroom div.k{background:#f6c177;}  /* kitchen */
+  .mroom div.r{background:#82d4ff;}  /* restroom */
+  /* floor plan mock */
+  .mplan{flex:1;border:2px solid var(--ink);border-radius:4px;margin-top:6px;position:relative;background:#fff;}
+  .mplan i{position:absolute;border-radius:2px;}
+  .mstars{font-size:10px;color:#f6c177;letter-spacing:1px;margin-top:5px;}
+  .shot .cap{padding:13px 15px;}
+  .shot .cap .n{font-weight:700;font-size:14.5px;color:var(--ink);}
+  .shot .cap .d{font-size:12.5px;color:var(--gray);margin-top:3px;}
+  .shot .num{position:absolute;top:10px;left:10px;background:var(--green);color:#fff;
+    font-size:11px;font-weight:700;border-radius:50%;width:24px;height:24px;display:grid;place-items:center;z-index:2;}
+
+  /* live demo */
+  .demo{border:1px solid var(--green-line);border-radius:18px;overflow:hidden;background:var(--panel);
+    box-shadow:0 10px 30px rgba(80,110,40,.07);}
+  .demo-top{padding:20px 22px 4px;}
+  .demo-top h3{margin:0;font-size:18px;}
+  .demo-top p{margin:8px 0 0;font-size:14px;color:#4a4f44;}
+  .demo-top p b{color:var(--green-d);}
+  .demo-body{display:grid;grid-template-columns:340px 1fr;gap:0;}
+  @media(max-width:780px){.demo-body{grid-template-columns:1fr;}}
+  .stage{padding:22px;border-right:1px solid var(--green-line);}
+  @media(max-width:780px){.stage{border-right:none;border-bottom:1px solid var(--green-line);}}
+  #grid{display:grid;grid-template-columns:repeat(20,1fr);gap:1px;background:var(--green-line);
+    border:2px solid var(--ink);border-radius:6px;width:300px;height:300px;margin:0 auto;}
+  .cell{background:#fff;}
+  /* furniture colors */
+  .f1{background:#9fc93c;} /* bed */
+  .f7{background:#82d4ff;} /* refri */
+  .f3{background:#f6c177;} /* closet */
+  .clash{background:var(--red)!important;box-shadow:inset 0 0 0 1px #fff;}
+  .controls{padding:22px;}
+  .toggle{display:flex;border:1px solid var(--green-line);border-radius:24px;overflow:hidden;margin-bottom:16px;}
+  .toggle button{flex:1;border:none;background:#fff;font-family:inherit;font-size:13.5px;font-weight:700;
+    padding:11px 8px;cursor:pointer;color:var(--gray);transition:.2s;}
+  .toggle button.on{color:#fff;}
+  .toggle button.on.before{background:var(--red);}
+  .toggle button.on.after{background:var(--green);}
+  .reroll{width:100%;border:none;border-radius:20px;background:var(--green);color:#fff;font-family:inherit;
+    font-size:14px;font-weight:700;padding:11px;cursor:pointer;box-shadow:var(--shadow);transition:.2s;margin-bottom:18px;}
+  .reroll:hover{background:var(--green-l);}
+  .statebox{border:1px solid var(--green-line);border-radius:12px;background:#fff;padding:14px 16px;font-size:13px;}
+  .statebox .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--green-line);}
+  .statebox .row:last-child{border-bottom:none;}
+  .statebox .k{color:var(--gray);font-family:ui-monospace,Menlo,monospace;}
+  .statebox .v{font-weight:700;font-family:ui-monospace,Menlo,monospace;}
+  .verdict-line{margin-top:14px;font-size:13.5px;font-weight:700;padding:10px 12px;border-radius:10px;}
+  .vl-before{background:var(--red-soft);color:#b3261e;}
+  .vl-after{background:var(--green-soft);color:var(--green-d);}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--gray);margin-top:14px;justify-content:center;}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+
+  /* design cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px;}
+  .card{border:1px solid var(--green-line);border-radius:16px;background:#fff;padding:20px 20px 22px;
+    box-shadow:0 8px 26px rgba(80,110,40,.06);display:flex;flex-direction:column;}
+  .card .tag{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--green-d);
+    background:var(--green-soft);border:1px solid var(--green-line);border-radius:12px;
+    padding:3px 11px;align-self:flex-start;margin-bottom:12px;}
+  .card .field{margin-top:12px;}
+  .card .field .lbl{font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.5px;}
+  .card .field .val{font-size:14px;margin-top:2px;color:var(--ink);}
+  .card .field.pick .val{color:var(--green-d);font-weight:700;}
+  .card .field.cost .val{color:#a8632b;}
+  .card .field .val b{color:var(--green-d);}
+
+  footer{text-align:center;padding:40px 0 60px;color:var(--gray);font-size:13px;
+    border-top:1px solid var(--green-line);}
+  footer a{color:var(--green-d);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">가배<span class="leaf">🥬</span>추</div>
+  <div class="tagline">사용자에게 최적의 가구 배치를 추천하는 시스템</div>
+  <p class="pitch">
+    방의 <b>고정 구조(화장실·주방 위치)</b>와 <b>사용자 정보</b>만 입력하면,
+    가구가 겹치지 않게 자동 배치하고 평면도 이미지로 그려 추천합니다.
+    데이터·라이브러리의 제약 속에서 <b>"일단 작동하고, 점점 똑똑해지는"</b> 설계를 택했습니다.
+  </p>
+  <div class="chips">
+    <span class="chip">Django + <b>numpy</b></span>
+    <span class="chip"><b>Pillow</b> 이미지 합성</span>
+    <span class="chip">규칙기반 추천 → <b>CF 진화</b></span>
+    <span class="chip">단국대 캡스톤 · 2021</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== 1. GALLERY ===== -->
+  <section>
+    <h2 class="sec">01 — Screens</h2>
+    <div class="sec-title">앱 화면 흐름 <span style="font-size:13px;font-weight:600;color:var(--gray);">(목업)</span></div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <!-- ===== 2. LIVE DEMO ===== -->
+  <section>
+    <h2 class="sec">02 — Live demo</h2>
+    <div class="sec-title">자동 가구 배치 — 겹침 없이 채우기</div>
+    <div class="demo">
+      <div class="demo-top">
+        <h3>문제: 가구를 무작위로 놓으면 서로 겹친다</h3>
+        <p>방 격자에 침대·냉장고·옷장을 자동으로 배치해야 합니다.
+          <b>Before</b>는 좌표만 무작위로 찍어 가구가 겹치고(빨강),
+          <b>After</b>는 실제 코드의 <code>find_index6()</code> 방식 —
+          <b>벽에 붙이고(<code>random.choice([0, 15-hsize])</code>)</b> +
+          <b>겹치면 다시 뽑는 거절 샘플링(<code>cont</code> 플래그)</b> — 으로 겹침을 없앱니다.</p>
+      </div>
+      <div class="demo-body">
+        <div class="stage">
+          <div id="grid"></div>
+          <div class="legend">
+            <span><i style="background:#9fc93c"></i>침대 8×4</span>
+            <span><i style="background:#82d4ff"></i>냉장고 3×3</span>
+            <span><i style="background:#f6c177"></i>옷장 4×2</span>
+            <span><i style="background:#e05d4e"></i>충돌</span>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="toggle">
+            <button id="btnBefore" class="on before">Before · 무작위</button>
+            <button id="btnAfter" class="after">After · find_index6</button>
+          </div>
+          <button class="reroll" id="reroll">↻ 다시 배치 (re-roll)</button>
+          <div class="statebox" id="statebox"></div>
+          <div class="verdict-line" id="verdict"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. DESIGN DECISIONS ===== -->
+  <section>
+    <h2 class="sec">03 — Design decisions</h2>
+    <div class="sec-title">대안이 있었지만 이걸 택했다</div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+</div>
+
+<footer>
+  가배추 (말하는 감자 🥔) · Dongwoo Kim · YeonHong Kim · YuBeen Kim · Sunmin Lee<br>
+  <a href="https://github.com/sssuunnnm/capstonedesign2021" target="_blank" rel="noopener">github.com/sssuunnnm/capstonedesign2021</a>
+</footer>
+
+<script>
+/* ---------------- 1. GALLERY (CSS 목업) ---------------- */
+const SHOTS = [
+  {n:"홈",            d:"서비스 소개와 시작 진입점", mock:`
+    <div class="mock">
+      <div class="mlogo">가배<span class="lf">🥬</span>추</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="mbar" style="width:70%;"></div>
+        <div class="mbar" style="width:90%;"></div>
+        <div class="mbar" style="width:55%;"></div>
+        <div class="mbtn" style="width:60%;margin-top:10px;">시작하기</div>
+      </div>
+    </div>`},
+  {n:"사용자 정보 입력", d:"성별·나이·직업으로 추천 개인화", mock:`
+    <div class="mock">
+      <div class="mlogo">사용자 정보</div>
+      <div class="mlabel">성별</div>
+      <div class="mradio"><span class="sel">여</span><span>남</span></div>
+      <div class="mlabel">나이대</div>
+      <div class="mradio"><span>10s</span><span class="sel">20s</span><span>30s</span><span>40s+</span></div>
+      <div class="mlabel">직업</div>
+      <div class="minput"></div>
+      <div class="mbtn" style="width:50%;margin-top:8px;align-self:flex-end;">다음</div>
+    </div>`},
+  {n:"방 정보 입력",   d:"방 이름과 형태 설정", mock:`
+    <div class="mock">
+      <div class="mlogo">방 정보</div>
+      <div class="mlabel">방 이름</div>
+      <div class="minput"></div>
+      <div class="mlabel">방 형태</div>
+      <div class="mradio"><span class="sel">사각형</span><span>L자형</span></div>
+      <div class="mlabel">크기</div>
+      <div class="minput" style="width:60%;"></div>
+      <div class="mbtn" style="width:50%;margin-top:8px;align-self:flex-end;">다음</div>
+    </div>`},
+  {n:"고정 가구 위치", d:"화장실·주방 위치 → 추천 분기 기준", mock:`
+    <div class="mock">
+      <div class="mlogo">고정 가구 배치</div>
+      <div class="mlabel">격자에서 화장실·주방 위치 선택</div>
+      <div class="mroom">
+        <div class="k"></div><div class="k"></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div class="r"></div><div class="r"></div>
+      </div>
+    </div>`},
+  {n:"추천 결과",      d:"평면도 3안 + 별점 피드백 수집", mock:`
+    <div class="mock">
+      <div class="mlogo">당신을 위한 추천배치</div>
+      <div class="mplan">
+        <i style="background:#9fc93c;top:6px;left:6px;width:42%;height:26%;"></i>
+        <i style="background:#82d4ff;top:6px;right:6px;width:20%;height:20%;"></i>
+        <i style="background:#f6c177;bottom:8px;left:10px;width:28%;height:18%;"></i>
+      </div>
+      <div class="mstars">★★★★☆</div>
+    </div>`},
+];
+const gal = document.getElementById('gallery');
+SHOTS.forEach((s,i)=>{
+  const el=document.createElement('div');
+  el.className='shot';
+  el.innerHTML=`
+    <div class="frame">
+      <span class="num">${i+1}</span>
+      ${s.mock}
+      <span class="badge">MOCKUP</span>
+    </div>
+    <div class="cap"><div class="n">${s.n}</div><div class="d">${s.d}</div></div>`;
+  gal.appendChild(el);
+});
+
+/* ---------------- 2. LIVE DEMO ----------------
+   실제 main.py 의 find_index6 / 가구 정의를 반영:
+   - 격자 20x20, 배치 루프는 0..15 범위 사용
+   - 가구: 침대(8x4,tag1) 냉장고(3x3,tag7) 옷장(4x2,tag3)
+   - After: in1=random.choice([0,15-hsize]) 벽부착 + cont 플래그 거절샘플링
+   - Before: in1,in2 = randint 무작위, 충돌검사 없음
+------------------------------------------------*/
+const N=20;
+const FURN=[
+  {tag:1, cls:'f1', h:4, w:8, dir:'가로', name:'침대'},
+  {tag:7, cls:'f7', h:3, w:3, dir:'가로', name:'냉장고'},
+  {tag:3, cls:'f3', h:2, w:4, dir:'세로', name:'옷장'},
+];
+let mode='before';
+let lastState={tries:0,placed:[]};
+
+const grid=document.getElementById('grid');
+const cells=[];
+for(let i=0;i<N*N;i++){const c=document.createElement('div');c.className='cell';grid.appendChild(c);cells.push(c);}
+
+function clearGrid(){cells.forEach(c=>c.className='cell');}
+
+function randint(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function choice(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+// effective footprint given direction (가로: h x w, 세로: w x h)
+function footprint(f){
+  return f.dir==='가로' ? {fh:f.h, fw:f.w} : {fh:f.w, fw:f.h};
+}
+
+function placeAfter(){
+  // rejection sampling + wall snapping  (find_index6)
+  const board=Array.from({length:N},()=>Array(N).fill(0));
+  let totalTries=0; const placed=[];
+  for(const f of FURN){
+    const {fh,fw}=footprint(f);
+    let in1=0,in2=0,cont,guard=0;
+    do{
+      cont=0; guard++;
+      if(f.dir==='가로'){ in1=choice([0,15-fh]); in2=randint(0,15-fw); }
+      else             { in2=choice([0,15-fw]); in1=randint(0,15-fh); }
+      for(let i=in1;i<in1+fh;i++)for(let j=in2;j<in2+fw;j++)
+        if(board[i][j]!==0) cont=1;
+      totalTries++;
+    }while(cont===1 && guard<400);
+    for(let i=in1;i<in1+fh;i++)for(let j=in2;j<in2+fw;j++) board[i][j]=f.tag;
+    placed.push({f,in1,in2,fh,fw});
+  }
+  return {board,totalTries,placed,clashes:0};
+}
+
+function placeBefore(){
+  // naive: random coords, NO collision check  → overlaps happen
+  const board=Array.from({length:N},()=>Array(N).fill(0));
+  let clashes=0; const placed=[];
+  for(const f of FURN){
+    const {fh,fw}=footprint(f);
+    const in1=randint(0,15-fh), in2=randint(0,15-fw);
+    for(let i=in1;i<in1+fh;i++)for(let j=in2;j<in2+fw;j++){
+      if(board[i][j]!==0){ board[i][j]=-1; clashes++; }   // -1 = collision
+      else board[i][j]=f.tag;
+    }
+    placed.push({f,in1,in2,fh,fw});
+  }
+  return {board,totalTries:FURN.length,placed,clashes};
+}
+
+function draw(res){
+  clearGrid();
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+    const v=res.board[i][j];
+    const c=cells[i*N+j];
+    if(v===-1) c.classList.add('clash');
+    else if(v!==0){
+      const f=FURN.find(x=>x.tag===v);
+      if(f) c.classList.add(f.cls);
+    }
+  }
+  // state panel
+  const sb=document.getElementById('statebox');
+  const dirSummary=res.placed.map(p=>`${p.f.name}(${p.f.dir})`).join(', ');
+  sb.innerHTML=`
+    <div class="row"><span class="k">mode</span><span class="v">${mode==='before'?'무작위':'find_index6'}</span></div>
+    <div class="row"><span class="k">가구 수</span><span class="v">${FURN.length}</span></div>
+    <div class="row"><span class="k">in1/in2 시도</span><span class="v">${res.totalTries} 회</span></div>
+    <div class="row"><span class="k">cont(거절검사)</span><span class="v">${mode==='after'?'ON':'없음'}</span></div>
+    <div class="row"><span class="k">충돌 칸</span><span class="v" style="color:${res.clashes? '#b3261e':'#558b2f'}">${res.clashes}</span></div>`;
+  const vd=document.getElementById('verdict');
+  if(mode==='before'){
+    vd.className='verdict-line vl-before';
+    vd.innerHTML = res.clashes
+      ? `❌ 가구 ${res.clashes}칸이 겹쳤습니다 — 충돌 검사가 없어 그대로 깨진 배치`
+      : `⚠️ 이번엔 운 좋게 안 겹쳤지만, 보장이 없습니다 (re-roll 해보세요)`;
+  }else{
+    vd.className='verdict-line vl-after';
+    vd.innerHTML=`✅ 충돌 0 — 벽 부착 + 거절 샘플링으로 ${res.totalTries}번 만에 유효 배치 확보`;
+  }
+}
+
+function run(){ draw(mode==='before'?placeBefore():placeAfter()); }
+
+document.getElementById('btnBefore').onclick=()=>{
+  mode='before';
+  document.getElementById('btnBefore').classList.add('on');
+  document.getElementById('btnAfter').classList.remove('on');
+  run();
+};
+document.getElementById('btnAfter').onclick=()=>{
+  mode='after';
+  document.getElementById('btnAfter').classList.add('on');
+  document.getElementById('btnBefore').classList.remove('on');
+  run();
+};
+document.getElementById('reroll').onclick=run;
+run();
+
+/* ---------------- 3. DESIGN CARDS ---------------- */
+const CARDS=[
+  {
+    tag:"외부 제약 · 콜드스타트",
+    sit:"추천에 쓸 평점 데이터가 거의 없었다 (희소 행렬).",
+    pick:"코사인 유사도 협업필터링 대신, 방 구조를 (그룹×태그) 24개 이산 케이스로 인코딩",
+    why:"데이터 0개에서도 결정론적으로 후보가 나오고, 평점이 쌓이면 <b>pic()의 re-rank</b>로 협업필터링에 가깝게 진화하는 경로를 확보.",
+    cost:"케이스를 사람이 사전에 디자인해야 해 표현 가능한 배치 수가 제한됨."
+  },
+  {
+    tag:"라이브러리 한계 · PIL",
+    sit:"Pillow엔 '격자 셀' 개념이 없어 배열을 평면도로 못 그린다.",
+    pick:"numpy <code>np.where</code>로 같은 코드 좌표 군집을 뽑고, 행/열 카운트로 가구 크기를 역산",
+    why:"배율 <code>s = 이미지크기 // 배열크기</code> 한 줄로 셀→픽셀 변환 완성. 배치 알고리즘과 렌더러가 완전히 분리됨.",
+    cost:"가구가 직사각형 한 덩어리라는 가정에 묶임 (L자형 등 불가)."
+  },
+  {
+    tag:"알고리즘 선택 · 배치",
+    sit:"가구가 겹치지 않게 자동 배치해야 한다.",
+    pick:"제약 충족 솔버 대신 <b>벽 부착 + 거절 샘플링</b>(find_index6)",
+    why:"<code>random.choice([0,15-hsize])</code>로 가구를 벽에 붙여 실제 인테리어처럼 보이게 하고, <code>cont</code> 플래그로 겹치면 다시 뽑아 단순하게 해결.",
+    cost:"빈 공간이 부족하면 재시도가 길어질 수 있어 guard(상한)가 필요."
+  }
+];
+const cw=document.getElementById('cards');
+CARDS.forEach(c=>{
+  const el=document.createElement('div');
+  el.className='card';
+  el.innerHTML=`
+    <span class="tag">${c.tag}</span>
+    <div class="field"><div class="lbl">상황</div><div class="val">${c.sit}</div></div>
+    <div class="field pick"><div class="lbl">선택한 것</div><div class="val">${c.pick}</div></div>
+    <div class="field"><div class="lbl">선택 이유</div><div class="val">${c.why}</div></div>
+    <div class="field cost"><div class="lbl">감수한 비용</div><div class="val">${c.cost}</div></div>`;
+  cw.appendChild(el);
+});
+</script>
+</body>
+</html>
