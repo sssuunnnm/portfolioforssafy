@@ -60,7 +60,7 @@ StateFlow 노드 매핑 출처: `presentation/home/walk/WalkViewModel.kt`
 
 ---
 
-## 3. NGRMS-FE (Web Frontend)
+## 3. NGRAS-FE (Web Frontend)
 
 ### SSE / 진행률 추적
 - 훅: `src/features/regulation/hooks/useRegulationProcessingTracker.ts`

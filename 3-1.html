@@ -1,810 +1,431 @@
-<!DOCTYPE html>
-<html lang="ko">
+<!doctype html>
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NGRMS-FE · 설계 인터랙티브 데모</title>
+<title>Realtime Job Console · Network Layer Internals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --primary:#1428A0;
-    --primary-dark:#10238b;
-    --teal:#27BFB2;
-    --muted:#F2F4FF;
-    --ink:#111;
-    --ink2:#222;
-    --ink3:#555;
-    --ink4:#8a90a6;
-    --line:#e3e6f3;
-    --green:#16a34a;
-    --red:#dc2626;
-    --amber:#d97706;
-    --grad:linear-gradient(90deg,#1428a0 0%,#27bfb2 100%);
-    --radius-card:30px;
-    --radius-btn:12px;
-    --code-bg:#0f1633;
+    --app-bg:#F6F8FA; --panel-bg:#ffffff; --muted-bg:#ebf5ff;
+    --text-main:#111827; --text-subtle:#4b5563; --border:#e3e8ee;
+    --accent:#0969DA; --accent-hover:#1580ff;
+    --success:#1A7F37; --danger:#CF222E; --amber:#9a6700;
+    --gra:linear-gradient(to right,#0D56AC 0%,#0969DA 30%,#27BFB2 100%);
+    --dark-bg:#1e2535; --dark-panel:#2d3a4f; --dark-accent:#4a9eff;
+    --dark-text:#e8eef5; --dark-muted:#6a7a8f;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    font-family:"SUIT","Pretendard",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-    color:var(--ink);
-    background:
-      radial-gradient(1100px 460px at 85% -10%, #eaf6f4 0%, transparent 60%),
-      radial-gradient(900px 420px at 0% -5%, #eef0ff 0%, transparent 55%),
-      #fbfcff;
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  a{color:inherit}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{font-family:'Inter','Noto Sans KR',sans-serif;background:var(--app-bg);color:var(--text-main);-webkit-font-smoothing:antialiased;line-height:1.5}
+  ::selection{background:#0969da33}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .mono{font-family:var(--mono)}
 
-  /* ── Header ── */
-  header.top{
-    position:sticky;top:0;z-index:50;
-    background:rgba(255,255,255,.82);
-    backdrop-filter:saturate(160%) blur(10px);
-    border-bottom:1px solid var(--line);
-  }
-  .top-inner{
-    max-width:1180px;margin:0 auto;padding:0 28px;height:72px;
-    display:flex;align-items:center;justify-content:space-between;gap:20px;
-  }
-  .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
-  .brand .dot{
-    width:30px;height:30px;border-radius:9px;background:var(--grad);
-    box-shadow:0 6px 16px rgba(20,40,160,.28);
-  }
-  .brand .name{font-weight:900;letter-spacing:-.02em;font-size:21px;color:var(--ink)}
-  .brand .name span{
-    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .top-nav{display:flex;gap:6px}
-  .top-nav button{
-    border:0;background:transparent;font:inherit;font-size:14px;color:var(--ink3);
-    padding:8px 14px;border-radius:999px;cursor:pointer;transition:.18s;font-weight:600;
-  }
-  .top-nav button:hover{background:var(--muted);color:var(--primary)}
-  .top-nav button.active{background:var(--primary);color:#fff}
+  header.hero{background:var(--gra);color:#fff;padding:50px 0 56px;position:relative;overflow:hidden}
+  header.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(900px 300px at 80% -20%,rgba(255,255,255,.18),transparent)}
+  .hero .wrap{position:relative;z-index:1}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+  .hero h1{font-size:36px;font-weight:800;letter-spacing:-.02em;margin:10px 0 6px}
+  .hero p.lead{font-size:16px;max-width:700px;opacity:.95}
+  .stackrow{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+  .chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:600}
 
-  /* ── Layout ── */
-  main{max-width:1180px;margin:0 auto;padding:40px 28px 90px}
-  .hero{margin:18px 0 40px}
-  .hero .kicker{
-    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;
-    color:var(--primary);background:var(--muted);padding:7px 14px;border-radius:999px;
-    border:1px solid #dfe3ff;
-  }
-  .hero h1{font-size:40px;line-height:1.18;letter-spacing:-.03em;margin:18px 0 12px;font-weight:800}
-  .hero h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p{font-size:16px;color:var(--ink3);max-width:760px;margin:0}
+  section.block{padding:50px 0;border-bottom:1px solid var(--border)}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .sec-num{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);background:var(--muted-bg);padding:3px 9px;border-radius:7px}
+  .sec-head h2{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .sec-sub{color:var(--text-subtle);font-size:14.5px;margin-bottom:24px;max-width:780px}
+  .sec-sub code,p code,li code{font-family:var(--mono);font-size:12px;background:var(--muted-bg);padding:1px 6px;border-radius:5px;color:#0a3d7a}
 
-  section.block{display:none;animation:fade .35s ease}
-  section.block.show{display:block}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .card{background:var(--panel-bg);border:1px solid var(--border);border-radius:14px}
+  .btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-main);cursor:pointer;transition:all .14s}
+  .btn:hover{border-color:#c2cbd6;background:#fafbfc}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+  .ctrls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
 
-  .sec-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
-  .sec-head .idx{
-    flex:none;width:46px;height:46px;border-radius:14px;background:var(--grad);color:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;
-    box-shadow:0 8px 20px rgba(20,40,160,.25);
-  }
-  .sec-head h2{margin:0;font-size:25px;letter-spacing:-.02em}
-  .sec-head .file{
-    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--primary);
-    background:var(--muted);padding:3px 9px;border-radius:7px;border:1px solid #dfe3ff;display:inline-block;margin-top:7px;
-  }
-  .sec-head p{margin:9px 0 0;color:var(--ink3);font-size:14.5px;max-width:820px}
+  /* ── Section 1: SSE state machine ── */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin-bottom:8px}
+  .fnode{flex:1;min-width:150px;position:relative;cursor:pointer;border:2px solid var(--border);background:#fff;border-radius:12px;padding:14px 13px;transition:all .16s;text-align:center}
+  .fnode:hover{border-color:#c2cbd6;transform:translateY(-2px)}
+  .fnode.active{border-color:var(--accent);background:#f5f9ff;box-shadow:0 6px 18px rgba(9,105,218,.14)}
+  .fnode.fired{animation:firePulse .6s ease}
+  @keyframes firePulse{0%{box-shadow:0 0 0 0 rgba(9,105,218,.4)}100%{box-shadow:0 0 0 14px rgba(9,105,218,0)}}
+  .fnode .ic{font-size:20px;margin-bottom:6px}
+  .fnode .ft{font-size:13.5px;font-weight:700}
+  .fnode .fc{font-family:var(--mono);font-size:10.5px;color:var(--text-subtle);margin-top:3px}
+  .farrow{display:flex;align-items:center;justify-content:center;width:34px;color:#c2cbd6;font-size:20px;font-weight:700;flex-shrink:0}
+  @media(max-width:760px){.farrow{width:100%;height:24px;transform:rotate(90deg)}.fnode{min-width:100%}}
+  .reconnect-note{text-align:center;font-size:12px;color:var(--amber);margin:4px 0 18px;font-weight:600}
 
-  .card{
-    background:#fff;border:1px solid var(--line);border-radius:var(--radius-card);
-    box-shadow:0 18px 50px -28px rgba(20,40,90,.30);
-    padding:26px;
-  }
-  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:22px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .detail{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  @media(max-width:860px){.detail{grid-template-columns:1fr}}
+  .detail-text h3{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .detail-text p{font-size:13.5px;color:var(--text-subtle);margin-bottom:10px}
+  .detail-text .why{background:var(--muted-bg);border-left:3px solid var(--accent);border-radius:8px;padding:10px 13px;font-size:13px;color:#0a3d7a}
+  .code{font-family:var(--mono);font-size:12px;background:#0d1117;color:#c9d1d9;border-radius:11px;padding:15px;line-height:1.65;overflow-x:auto}
+  .code::-webkit-scrollbar{height:7px}.code::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+  .code .cmt{color:#8b949e}.code .kw{color:#ff7b72}.code .fn{color:#d2a8ff}.code .str{color:#a5d6ff}.code .num{color:#79c0ff}
+  .code .hl{background:#13233b;display:block;border-left:3px solid var(--dark-accent);padding-left:9px;margin:0 -9px 0 -12px}
 
-  .panel-title{font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--ink4);text-transform:uppercase;margin:0 0 14px}
+  /* EventSource rationale toggle */
+  .es-compare{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.es-compare{grid-template-columns:1fr}}
+  .es-card{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff}
+  .es-card.bad{border-color:#f0c2c6;background:#fff7f7}
+  .es-card.good{border-color:#b6e0bf;background:#f4faf5}
+  .es-card h4{font-size:13.5px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .es-card.bad h4{color:var(--danger)}.es-card.good h4{color:var(--success)}
+  .es-card .line{font-family:var(--mono);font-size:11.5px;padding:6px 9px;border-radius:7px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .es-card.bad .line{background:#ffeaea;color:#86181d}
+  .es-card.good .line{background:#e7f6ea;color:#0f5323}
+  .es-card .verdict{font-size:12.5px;color:var(--text-subtle);margin-top:9px}
 
-  /* ── SSE diagram ── */
-  .diagram-wrap{overflow-x:auto}
-  .diagram{position:relative;width:830px;height:430px;margin:0 auto}
-  .diagram svg{position:absolute;inset:0;width:830px;height:430px;pointer-events:none}
-  .node{
-    position:absolute;width:150px;height:54px;margin-left:-75px;margin-top:-27px;
-    border-radius:14px;background:#fff;border:2px solid var(--nc,#cbd2e6);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    cursor:pointer;transition:transform .16s, box-shadow .16s, border-color .16s;
-    box-shadow:0 4px 14px -6px rgba(20,40,90,.25);text-align:center;padding:0 8px;
-  }
-  .node:hover{transform:translateY(-2px);box-shadow:0 12px 26px -10px rgba(20,40,90,.4)}
-  .node .nl{font-weight:800;font-size:14px;letter-spacing:.01em;color:var(--nc,#445)}
-  .node .ns{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:var(--ink4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:138px}
-  .node.selected{border-width:2.5px;box-shadow:0 0 0 5px color-mix(in srgb,var(--nc) 18%,transparent),0 14px 28px -10px rgba(20,40,90,.45)}
-  .node.active{animation:pulse 1.1s ease-in-out infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--nc) 22%,transparent)}50%{box-shadow:0 0 0 11px color-mix(in srgb,var(--nc) 6%,transparent)}}
-  .edge{stroke:#c2c9de;stroke-width:2;fill:none;transition:stroke .2s}
-  .edge.dash{stroke-dasharray:5 5;stroke:#c8b6d8}
-  .edge.lit{stroke:var(--teal);stroke-width:3}
-  .edge-label{font-size:10.5px;fill:var(--ink4);font-weight:600}
-  .edge-label.lit{fill:var(--teal)}
-
-  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;justify-content:center}
-  .legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
-  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
-
-  .diag-controls{display:flex;gap:10px;margin-top:18px;justify-content:center;flex-wrap:wrap}
-
-  /* buttons */
-  .btn{
-    border:0;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;border-radius:var(--radius-btn);
-    padding:10px 18px;transition:.16s;display:inline-flex;align-items:center;gap:8px;
-  }
-  .btn.primary{background:var(--primary);color:#fff}
-  .btn.primary:hover{background:var(--primary-dark)}
-  .btn.ghost{background:#fff;color:var(--primary);border:1.5px solid #c9d0ee}
-  .btn.ghost:hover{background:var(--muted)}
-  .btn.teal{background:var(--teal);color:#fff}
-  .btn.teal:hover{filter:brightness(.95)}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-
-  /* code panel */
-  .codebox{background:var(--code-bg);border-radius:18px;overflow:hidden;border:1px solid #232c55}
-  .codebar{display:flex;align-items:center;gap:7px;padding:11px 15px;background:#0b1029;border-bottom:1px solid #232c55}
-  .codebar .lt{width:11px;height:11px;border-radius:50%}
-  .codebar .fn{margin-left:8px;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11.5px;color:#7e88bd}
-  pre.code{margin:0;padding:16px 16px;overflow:auto;max-height:420px}
-  pre.code code{
-    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.3px;line-height:1.62;
-    color:#c8d0f0;white-space:pre;display:block;
-  }
-  .ln{display:block;padding:0 6px;border-radius:5px;transition:background .25s}
-  .ln.hl{background:rgba(110,168,255,.16);box-shadow:inset 3px 0 0 var(--teal)}
-  .tok-k{color:#6ea8ff}.tok-s{color:#86e6c4}.tok-c{color:#6b76a3;font-style:italic}
-  .tok-n{color:#f0a868}.tok-f{color:#ffd479}.tok-t{color:#5ce0e0}.tok-l{color:#c792ea}
-
-  .state-desc{margin-top:16px;background:var(--muted);border:1px solid #e0e4ff;border-radius:16px;padding:16px 18px}
-  .state-desc .st{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
-  .state-desc .st .pill{font-family:"SF Mono",monospace;font-size:11px;color:#fff;padding:2px 9px;border-radius:999px}
-  .state-desc p{margin:9px 0 0;font-size:13.8px;color:var(--ink3)}
-
-  /* event log */
-  .evlog{margin-top:18px;background:#0f1633;border-radius:16px;border:1px solid #232c55;padding:12px 14px;min-height:96px;max-height:150px;overflow:auto}
-  .evlog .ev{font-family:"SF Mono",monospace;font-size:11.5px;color:#9fb0e8;padding:2px 0;opacity:0;animation:evin .3s forwards}
-  @keyframes evin{to{opacity:1}}
-  .evlog .ev .tag{color:#5ce0e0}
-  .evlog .ev.done .tag{color:#7ee0a0}
-  .evlog .ev.fail .tag{color:#ff8a8a}
-  .evlog-empty{color:#56608f;font-family:"SF Mono",monospace;font-size:11.5px}
-
-  /* ── Race condition ── */
-  .lanes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
-  .req{
-    border:2px solid var(--rc,#d7dcef);border-radius:18px;padding:16px;background:#fff;transition:.25s;position:relative;overflow:hidden;
-  }
-  .req::after{content:"";position:absolute;left:0;top:0;height:100%;width:5px;background:var(--rc,#d7dcef);transition:.25s}
-  .req .rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .req .rname{font-weight:800;font-size:15px}
-  .req .rmeta{font-family:"SF Mono",monospace;font-size:11px;color:var(--ink4)}
-  .req .rstatus{
-    display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;color:var(--rc,#778);
-    background:color-mix(in srgb,var(--rc) 12%,#fff);padding:6px 12px;border-radius:10px;margin-top:4px;
-  }
-  .req .rstatus .d{width:8px;height:8px;border-radius:50%;background:var(--rc,#778)}
-  .req.busy .rstatus .d{animation:blink .9s infinite}
-  @keyframes blink{50%{opacity:.25}}
-
-  .sharedrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-  @media(max-width:760px){.sharedrow{grid-template-columns:1fr}.lanes{grid-template-columns:1fr}}
-  .sbox{border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:#fff}
-  .sbox .lbl{font-size:12px;font-weight:800;color:var(--ink4);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px}
-  .flag{display:flex;align-items:center;gap:12px}
-  .flag .toggle{
-    width:58px;height:30px;border-radius:999px;background:#d7dcef;position:relative;transition:.3s;flex:none;
-  }
-  .flag .toggle .knob{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.3s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
-  .flag.on .toggle{background:var(--primary)}
-  .flag.on .toggle .knob{left:31px}
-  .flag .val{font-family:"SF Mono",monospace;font-weight:700;font-size:14px;color:var(--ink3)}
-  .flag.on .val{color:var(--primary)}
-
-  .tokenpill{display:inline-flex;align-items:center;gap:9px;font-family:"SF Mono",monospace;font-size:13px;font-weight:700;padding:9px 14px;border-radius:12px;background:var(--muted);color:var(--ink3);border:1px solid #e0e4ff}
-  .tokenpill.fresh{background:#e9faf2;color:var(--green);border-color:#bfe9d2}
-  .refresh-spin{width:16px;height:16px;border:2.5px solid #c9d0ee;border-top-color:var(--primary);border-radius:50%;display:none}
-  .refreshing .refresh-spin{display:inline-block;animation:spin .8s linear infinite}
+  /* ── Section 2: 401 race ── */
+  .stage{display:grid;grid-template-columns:1fr 220px;gap:16px}
+  @media(max-width:860px){.stage{grid-template-columns:1fr}}
+  .lane{display:flex;flex-direction:column;gap:9px}
+  .lane-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-subtle);margin-bottom:3px}
+  .req{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;transition:all .25s;position:relative}
+  .req .rname{font-family:var(--mono);font-size:12.5px;font-weight:700;min-width:118px}
+  .req .rstate{font-size:11.5px;font-weight:600;margin-left:auto;padding:3px 9px;border-radius:999px;background:#eef1f5;color:var(--text-subtle);transition:all .2s}
+  .req.s-401{border-color:#f0c2c6}.req.s-401 .rstate{background:#ffeaea;color:#86181d}
+  .req.s-wait{border-color:#e9d8a6}.req.s-wait .rstate{background:#fbf2d5;color:#7a5c00}
+  .req.s-retry{border-color:#cfe3fb}.req.s-retry .rstate{background:#dbeafe;color:#0a3d7a}
+  .req.s-ok{border-color:#b6e0bf}.req.s-ok .rstate{background:#e7f6ea;color:#0f5323}
+  .req .spin{width:13px;height:13px;border:2px solid #d2a8ff40;border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:none}
+  .req.s-wait .spin,.req.s-retry .spin{display:inline-block}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .refresh-count{margin-left:auto;font-size:12px;color:var(--ink4)}
-  .refresh-count b{color:var(--primary);font-size:15px}
 
-  .queuebox{border:1px dashed #c9d0ee;border-radius:18px;padding:16px 18px;background:linear-gradient(#fff,#fafbff);margin-bottom:18px}
-  .queuebox .lbl{font-size:12px;font-weight:800;color:var(--ink4);text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-  .queuebox .lbl code{font-family:"SF Mono",monospace;color:var(--teal);text-transform:none;background:#eafaf8;padding:2px 7px;border-radius:6px;font-size:11.5px}
-  .queue{display:flex;gap:10px;min-height:48px;align-items:center;flex-wrap:wrap}
-  .queue .empty{color:var(--ink4);font-size:13px;font-family:"SF Mono",monospace}
-  .chip{
-    display:inline-flex;align-items:center;gap:7px;background:#fff;border:2px solid var(--teal);color:var(--teal);
-    font-weight:800;font-size:13px;padding:9px 14px;border-radius:12px;animation:chipin .3s;box-shadow:0 4px 12px -6px rgba(39,191,178,.5);
-  }
-  .chip .sub{font-weight:600;font-size:10.5px;color:var(--ink4);font-family:"SF Mono",monospace}
-  @keyframes chipin{from{transform:translateY(8px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+  .machine{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fafbfc;height:fit-content}
+  .machine h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-subtle);margin-bottom:12px}
+  .flag-box{border:2px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:12px;transition:all .2s}
+  .flag-box.on{border-color:var(--accent);background:#eef6ff}
+  .flag-box .fk{font-family:var(--mono);font-size:11.5px;color:var(--text-subtle)}
+  .flag-box .fv{font-family:var(--mono);font-size:15px;font-weight:800;margin-top:2px}
+  .flag-box.on .fv{color:var(--accent)}
+  .queue-label{font-family:var(--mono);font-size:11.5px;color:var(--text-subtle);margin-bottom:6px}
+  .queue{min-height:54px;border:2px dashed #cdd6e0;border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:5px;transition:border-color .2s}
+  .queue.has{border-style:solid;border-color:#e9d8a6;background:#fefbf0}
+  .qitem{font-family:var(--mono);font-size:11px;font-weight:700;background:#fbf2d5;color:#7a5c00;padding:4px 8px;border-radius:6px;animation:qin .25s ease}
+  @keyframes qin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  .refresh-call{margin-top:12px;font-family:var(--mono);font-size:11.5px;padding:8px 10px;border-radius:8px;background:#eef1f5;color:var(--text-subtle);text-align:center;font-weight:700;transition:all .2s}
+  .refresh-call.active{background:var(--gra);color:#fff;animation:pulse 1s ease infinite}
+  @keyframes pulse{50%{opacity:.7}}
 
-  .narr{display:flex;align-items:center;gap:14px;background:#0f1633;border-radius:16px;padding:16px 20px;color:#dfe6ff;margin-bottom:16px}
-  .narr .step-no{flex:none;width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
-  .narr .txt{font-size:14px;line-height:1.5}
-  .race-controls{display:flex;gap:10px;flex-wrap:wrap}
-  .progressline{height:5px;background:#e7eaf6;border-radius:999px;overflow:hidden;margin:0 0 18px}
-  .progressline .fill{height:100%;background:var(--grad);width:0;transition:width .35s}
+  .narrate{margin-top:16px;background:#0d1117;color:#c9d1d9;border-radius:11px;padding:13px 15px;font-family:var(--mono);font-size:12.5px;min-height:44px;display:flex;align-items:center;gap:10px;line-height:1.5}
+  .narrate .step-n{background:var(--accent);color:#fff;font-weight:700;border-radius:6px;padding:2px 8px;font-size:11px;flex-shrink:0}
 
-  .takeaway{margin-top:22px;border-left:4px solid var(--teal);background:var(--muted);border-radius:0 14px 14px 0;padding:14px 18px;font-size:13.8px;color:var(--ink2)}
-  .takeaway b{color:var(--primary)}
+  .excl{margin-top:18px;display:flex;flex-wrap:wrap;gap:9px}
+  .excl .ex{font-family:var(--mono);font-size:12px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 11px;display:flex;align-items:center;gap:7px}
+  .excl .ex .x{color:var(--danger);font-weight:800}
+  .callout{background:var(--muted-bg);border:1px solid #cfe3fb;border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;margin-top:18px;font-size:13.5px;color:#0a3d7a}
+  .callout b{color:#08305f}.callout code{font-family:var(--mono);font-size:12px;background:#dbeafe;padding:1px 6px;border-radius:5px}
 
-  footer{max-width:1180px;margin:0 auto;padding:30px 28px 60px;color:var(--ink4);font-size:12.5px;border-top:1px solid var(--line)}
+  .note{font-size:12.5px;color:var(--text-subtle);background:#fff;border:1px solid var(--border);border-left:3px solid var(--success);border-radius:9px;padding:11px 14px;margin-bottom:22px}
+  footer{padding:34px 0 48px;color:var(--text-subtle);font-size:13px;text-align:center}
+  footer .path{font-family:var(--mono);font-size:12px;color:#9aa6b2}
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="top-inner">
-    <a class="brand" href="#">
-      <span class="dot"></span>
-      <span class="name">NGRMS<span>·FE</span></span>
-    </a>
-    <nav class="top-nav">
-      <button data-tab="sse" class="active">SSE 상태 머신</button>
-      <button data-tab="race">동시성 · 토큰 갱신</button>
-    </nav>
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Frontend Engineering · Network Layer Internals</div>
+    <h1>인증 · 스트리밍 네트워크 레이어 해부</h1>
+    <p class="lead">장기 실행 작업(job)을 실시간으로 모니터링하는 콘솔의 통신 기반을 직접 만져보는 케이스 스터디. JWT 인증 SSE 스트리밍 파서와, 동시 401을 한 번의 refresh로 조율하는 race condition 해결을 단계별로 시각화했습니다. (도메인·식별 정보는 익명화한 일반화 버전입니다.)</p>
+    <div class="stackrow">
+      <span class="chip">fetch + ReadableStream</span><span class="chip">Axios Interceptor</span>
+      <span class="chip">JWT Refresh</span><span class="chip">AbortController</span><span class="chip">vanilla JS</span>
+    </div>
   </div>
 </header>
 
-<main>
-  <div class="hero">
-    <span class="kicker">● 실제 프로덕션 코드 기반 인터랙티브 데모</span>
-    <h1>실시간 스트림과 동시성을<br><span class="g">설계로 다루는 방식</span></h1>
-    <p>규제 문서 처리 추적(SSE)과 토큰 갱신(race condition) 두 모듈을, 레포의 실제 코드 값과 분기를 그대로 시각화했습니다. 다이어그램의 상태를 클릭하거나 시뮬레이션을 실행해 흐름을 따라가 보세요.</p>
+<div class="wrap" style="padding-top:18px">
+  <div class="note">📁 두 데모는 <b>실제 동작 방식을 기억에 의존해 재구성</b>한 것입니다 — <b>1번</b>은 fetch 기반 SSE 파서, <b>2번</b>은 axios 인터셉터의 <code>isRefreshing</code> + subscriber 큐. 엔드포인트·도메인 명칭은 일반 명칭으로 치환했습니다.</div>
+</div>
+
+<!-- ════════ 1. SSE PARSER STATE MACHINE ════════ -->
+<section class="block"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">01</span><h2>fetch 기반 SSE 파서 — 상태 흐름 다이어그램</h2></div>
+  <p class="sec-sub">표준 <code>EventSource</code>로는 JWT를 못 실어 <code>fetch</code> + <code>ReadableStream</code>으로 SSE를 직접 파싱합니다. 아래 상태를 클릭하면 각 단계의 코드가 펼쳐집니다.</p>
+
+  <div class="flow" id="flow"></div>
+  <div class="reconnect-note">↻ error 발생 시 → connecting 으로 되돌아가 재연결 (작업이 RUNNING 상태일 때만)</div>
+
+  <div class="detail">
+    <div class="detail-text">
+      <h3 id="d-title"></h3>
+      <p id="d-desc"></p>
+      <div class="why" id="d-why"></div>
+    </div>
+    <div class="code" id="d-code"></div>
   </div>
 
-  <!-- ════════ SECTION 1 : SSE STATE MACHINE ════════ -->
-  <section class="block show" id="block-sse">
-    <div class="sec-head">
-      <div class="idx">1</div>
-      <div>
-        <h2>SSE 연결 상태 머신</h2>
-        <span class="file">src/features/regulation/hooks/useRegulationProcessingTracker.ts</span>
-        <p>단순 구독이 아니라 <b>스냅샷 선조회 → 진행 중일 때만 스트림 연결 → 비정상 종료 시 자동 재연결</b>까지 처리하는 상태 머신입니다. 각 상태를 클릭하면 해당 분기를 담당하는 실제 코드가 표시됩니다.</p>
-      </div>
+  <div class="es-compare">
+    <div class="es-card bad">
+      <h4>✕ EventSource (표준 API)</h4>
+      <div class="line">new EventSource(url)</div>
+      <div class="line">⛔ 커스텀 헤더 주입 불가</div>
+      <div class="line">Authorization: Bearer ••• ❌</div>
+      <div class="verdict">모든 API가 JWT를 요구하는데 헤더를 못 실어 <b>인증 자체가 불가능</b>. GET 쿼리스트링에 토큰을 넣는 우회는 로그 노출 위험.</div>
+    </div>
+    <div class="es-card good">
+      <h4>✓ fetch + ReadableStream (채택)</h4>
+      <div class="line">fetch(url, { headers })</div>
+      <div class="line">✅ Authorization 헤더 주입</div>
+      <div class="line">body.getReader() 로 청크 읽기</div>
+      <div class="verdict">헤더 자유 + <code class="mono" style="background:#e7f6ea">AbortController</code>로 정리까지 직접 제어. SSE 프레임은 <code class="mono" style="background:#e7f6ea">split('\n\n')</code>로 파싱.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ════════ 2. 401 RACE CONDITION ════════ -->
+<section class="block"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">02</span><h2>동시 401 Race Condition — refresh 단일화</h2></div>
+  <p class="sec-sub">요청 3개가 <b>동시에</b> 401을 맞는 상황. flag/큐가 없으면 refresh가 3번 나갑니다. <code>isRefreshing</code> 플래그 + <code>refreshSubscribers[]</code> 큐로 <b>refresh를 한 번만</b> 호출하고, 나머지는 대기시켰다가 새 토큰으로 깨웁니다.</p>
+
+  <div class="ctrls">
+    <button class="btn primary" id="btn-race">▶ 동시 401 3개 시뮬레이션</button>
+    <button class="btn" id="btn-race-reset">↺ 초기화</button>
+  </div>
+
+  <div class="stage">
+    <div class="lane" id="lane">
+      <div class="lane-title">동시 요청 (concurrent requests)</div>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <p class="panel-title">상태 전이 다이어그램</p>
-        <div class="diagram-wrap">
-          <div class="diagram" id="diagram">
-            <svg id="edges"></svg>
-          </div>
-        </div>
-        <div class="legend">
-          <span><i style="background:#94a3b8"></i>idle</span>
-          <span><i style="background:#1428A0"></i>syncing</span>
-          <span><i style="background:#27BFB2"></i>streaming</span>
-          <span><i style="background:#16a34a"></i>completed</span>
-          <span><i style="background:#dc2626"></i>failed</span>
-          <span><i style="background:#d97706"></i>retry</span>
-        </div>
-        <div class="diag-controls">
-          <button class="btn primary" id="playHappy">▶ 정상 흐름 재생</button>
-          <button class="btn teal" id="playRetry">↻ 재연결 시나리오</button>
-          <button class="btn ghost" id="playReset">초기화</button>
-        </div>
-        <div class="evlog" id="evlog"><span class="evlog-empty">// 재생 시 SSE 이벤트가 여기에 출력됩니다</span></div>
-      </div>
-
-      <div>
-        <div class="codebox">
-          <div class="codebar">
-            <span class="lt" style="background:#ff5f56"></span>
-            <span class="lt" style="background:#ffbd2e"></span>
-            <span class="lt" style="background:#27c93f"></span>
-            <span class="fn" id="sseFn">useRegulationProcessingTracker.ts</span>
-          </div>
-          <pre class="code"><code id="sseCode"></code></pre>
-        </div>
-        <div class="state-desc" id="sseDesc"></div>
-      </div>
+    <div class="machine">
+      <h4>Interceptor 상태</h4>
+      <div class="flag-box" id="flag"><div class="fk">isRefreshing</div><div class="fv" id="flag-v">false</div></div>
+      <div class="queue-label">refreshSubscribers[]</div>
+      <div class="queue" id="queue"></div>
+      <div class="refresh-call" id="refresh-call">POST /auth/refresh · idle</div>
     </div>
+  </div>
 
-    <div class="takeaway">
-      <b>설계 포인트.</b> <code>EventSource</code>는 JWT 헤더를 못 실어 <code>fetch + ReadableStream</code>으로 직접 파싱하고,
-      문서별 <code>AbortController</code>·재시도 타이머를 <code>Map</code>으로 관리합니다. 완료/실패 시에만 <code>localStorage</code>를 정리하고 목록 쿼리를 무효화해, 새 탭·새로고침에도 추적이 복원됩니다.
+  <div class="narrate" id="narrate"><span class="step-n">0</span><span>버튼을 눌러 시뮬레이션을 시작하세요.</span></div>
+
+  <div style="margin-top:22px">
+    <div class="lane-title" style="margin-bottom:9px">refresh 자체가 401을 또 유발하지 않도록 — 제외 엔드포인트 & 무한루프 차단</div>
+    <div class="excl">
+      <span class="ex"><span class="x">✕</span> /auth/login</span>
+      <span class="ex"><span class="x">✕</span> /auth/refresh <span style="color:#9aa6b2">(refresh)</span></span>
+      <span class="ex"><span class="x">✕</span> /auth/me/password</span>
+      <span class="ex" style="border-color:#cfe3fb;background:#f5f9ff"><span style="color:var(--accent);font-weight:800">_retry</span> 플래그 → 재시도 1회 제한</span>
     </div>
-  </section>
+  </div>
 
-  <!-- ════════ SECTION 2 : RACE CONDITION ════════ -->
-  <section class="block" id="block-race">
-    <div class="sec-head">
-      <div class="idx">2</div>
-      <div>
-        <h2>동시 401 → 단 한 번의 토큰 갱신</h2>
-        <span class="file">src/api/client.ts</span>
-        <p>요청 3개가 <b>동시에 401</b>을 맞아도 토큰 갱신은 한 번만. 첫 요청이 '갱신 담당'이 되고 나머지는 <code>subscribe()</code>로 큐에 대기하다가, 갱신이 끝나면 <code>notify()</code>로 한꺼번에 깨워 재시도합니다.</p>
-      </div>
-    </div>
+  <div class="callout">
+    <b>핵심 판단:</b> <code>_retry</code>는 <u>한 요청</u>이 두 번 도는 걸 막을 뿐, <u>요청 간</u> 조율은 못 합니다. 동시 401을 한 번의 refresh로 묶으려면 모듈 스코프의 <code>isRefreshing</code> 플래그와 <code>refreshSubscribers[]</code> 큐가 따로 필요합니다. refresh 성공 시 큐를 새 토큰으로 flush, 실패 시 전부 reject + 로그아웃 처리 후 로그인 이동 — 대기 요청이 영원히 매달리지 않도록 양쪽을 모두 처리했습니다.
+  </div>
+</div></section>
 
-    <div class="card">
-      <div class="progressline"><div class="fill" id="raceFill"></div></div>
-
-      <div class="lanes" id="lanes"></div>
-
-      <div class="sharedrow">
-        <div class="sbox">
-          <div class="lbl">공유 플래그</div>
-          <div class="flag" id="flagBox">
-            <div class="toggle"><div class="knob"></div></div>
-            <div class="val" id="flagVal">isRefreshing = false</div>
-          </div>
-        </div>
-        <div class="sbox" id="refreshBox">
-          <div class="lbl">refreshAccessToken()</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="refresh-spin"></span>
-            <span class="tokenpill" id="tokenPill">만료된 토큰</span>
-            <span class="refresh-count">갱신 횟수 <b id="refreshCount">0</b></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="queuebox">
-        <div class="lbl">subscriber 큐 <code>subscribers[]</code></div>
-        <div class="queue" id="queue"><span class="empty">// 비어 있음</span></div>
-      </div>
-
-      <div class="narr">
-        <div class="step-no" id="stepNo">0</div>
-        <div class="txt" id="narrText"></div>
-      </div>
-
-      <div class="grid" style="grid-template-columns:1fr;gap:0">
-        <div class="codebox">
-          <div class="codebar">
-            <span class="lt" style="background:#ff5f56"></span>
-            <span class="lt" style="background:#ffbd2e"></span>
-            <span class="lt" style="background:#27c93f"></span>
-            <span class="fn">client.ts · 응답 인터셉터 (401 분기)</span>
-          </div>
-          <pre class="code"><code id="raceCode"></code></pre>
-        </div>
-      </div>
-
-      <div class="race-controls" style="margin-top:18px">
-        <button class="btn ghost" id="racePrev">◀ 이전</button>
-        <button class="btn primary" id="raceNext">다음 단계 ▶</button>
-        <button class="btn teal" id="raceAuto">▶▶ 자동 재생</button>
-        <button class="btn ghost" id="raceReset">초기화</button>
-      </div>
-    </div>
-
-    <div class="takeaway">
-      <b>설계 포인트.</b> <code>isRefreshing</code> 플래그 + <code>subscribers[]</code> 큐로 중복 갱신을 막습니다.
-      <code>_retry</code> 플래그로 무한 루프를 차단하고, refresh 요청 자체의 실패는 별도 분기에서 즉시 <code>forceLogout()</code> 처리합니다.
-    </div>
-  </section>
-</main>
-
-<footer>
-  NGRMS-FE — 규제 관리 시스템 프론트엔드 · 인터랙티브 코드 데모. 모든 코드 스니펫은 레포지토리의 실제 구현을 발췌한 것입니다.
-</footer>
-
-<!-- ───────── code snippets (text/plain to avoid escaping issues) ───────── -->
-<script type="text/plain" id="code-idle">const trackDocument = useCallback(
-  (documentId: number, title?: string) => {
-    addProcessingDocumentId(documentId)          // localStorage에 ID 저장 (멀티탭 복원용)
-    upsertDocument(documentId, buildPendingEvent(documentId), { title })
-    void syncDocument(documentId, { title })     // 추적 시작 → SYNCING
-  },
-  [syncDocument, upsertDocument],
-)
-
-function buildPendingEvent(documentId: number) {
-  return {
-    documentId,
-    status: "PROCESSING",
-    step: "PROCESSING",
-    message: "문서 처리 상태를 확인하고 있습니다.",
-    eventTime: new Date().toISOString(),
-  }
-}</script>
-
-<script type="text/plain" id="code-syncing">const syncDocument = async (documentId, options = {}) => {
-  clearRetryTimeout(documentId)
-  try {
-    // ① 먼저 REST로 현재 스냅샷 조회
-    const currentEvent =
-      await regulationService.getDocumentProgressStatus(documentId)
-
-    // ② 이미 끝난 문서면 스트림을 열지 않고 즉시 종료
-    if (isFinalEvent(currentEvent)) {
-      upsertDocument(documentId, currentEvent, options)
-      finalizeTracking(documentId)
-      return
-    }
-
-    // ③ 진행 중일 때만 SSE 연결
-    upsertDocument(documentId, currentEvent, options)
-    connectToProgressStream(documentId, options)
-  } catch (error) {
-    // 조회 실패 → 재시도 예약
-    upsertDocument(documentId, buildPendingEvent(documentId), options)
-    scheduleRetry(documentId, options)
-  }
-}</script>
-
-<script type="text/plain" id="code-streaming">const connectToProgressStream = (documentId, options = {}) => {
-  if (streamControllersRef.current.has(documentId)) return  // 중복 연결 차단
-
-  const streamController = new AbortController()
-  streamControllersRef.current.set(documentId, streamController)
-  let hasReceivedFinalEvent = false
-
-  void regulationService
-    .streamDocumentProgress(documentId, {
-      signal: streamController.signal,
-      onEvent: (_, nextEvent) => {
-        upsertDocument(documentId, nextEvent, options)     // 진행률 갱신
-        if (isFinalEvent(nextEvent)) {                     // COMPLETED / FAILED
-          hasReceivedFinalEvent = true
-          finalizeTracking(documentId)
-        }
-      },
-    })
-    .then(() => {
-      if (hasReceivedFinalEvent) return                    // 정상 종료
-      streamControllersRef.current.delete(documentId)
-      scheduleRetry(documentId, options)                   // 비정상 끊김 → 재연결
-    })
-    .catch(() => scheduleRetry(documentId, options))        // 에러 → 재연결
-}</script>
-
-<script type="text/plain" id="code-final">function isFinalEvent(event) {
-  return event.status === "COMPLETED" || event.status === "FAILED"
-}
-
-const finalizeTracking = (documentId) => {
-  clearRetryTimeout(documentId)
-  closeProgressStream(documentId)                 // AbortController.abort()
-  removeProcessingDocumentId(documentId)          // localStorage 정리
-  queryClient.invalidateQueries({                 // 규제 목록 갱신
-    queryKey: ["regulations"],
-  })
-}</script>
-
-<script type="text/plain" id="code-retry">const SSE_RETRY_DELAY_MS = 3000
-
-const scheduleRetry = (documentId, options = {}) => {
-  clearRetryTimeout(documentId)
-  const timeoutId = window.setTimeout(() => {
-    void syncDocumentRef.current?.(documentId, options)   // 3초 뒤 다시 SYNCING
-  }, SSE_RETRY_DELAY_MS)
-  retryTimeoutsRef.current.set(documentId, timeoutId)
-}
-
-// 스트림이 종료 이벤트 없이 끝난 경우
-.then(() => {
-  if (hasReceivedFinalEvent) return
-  streamControllersRef.current.delete(documentId)
-  scheduleRetry(documentId, options)              // → RETRY
-})</script>
-
-<script type="text/plain" id="code-race">if (status === 401 && !originalRequest._retry) {
-  originalRequest._retry = true                  // 무한 루프 방지
-
-  if (isRefreshing) {
-    // 이미 다른 요청이 갱신 중 → 큐에 등록하고 대기
-    return new Promise((resolve) => {
-      subscribe((token) => {
-        originalRequest.headers.Authorization = `Bearer ${token}`
-        resolve(api(originalRequest))            // 새 토큰으로 재시도
-      })
-    })
-  }
-
-  isRefreshing = true                            // 내가 '갱신 담당'
-  try {
-    const newToken = await refreshAccessToken()
-    isRefreshing = false
-    notify(newToken)                             // 대기 요청 전부 깨우기
-    originalRequest.headers.Authorization = `Bearer ${newToken}`
-    return api(originalRequest)
-  } catch (refreshError) {
-    isRefreshing = false
-    forceLogout()                                // refresh 실패 → 강제 로그아웃
-    return Promise.reject(refreshError)
-  }
-}</script>
+<footer><div class="wrap">
+  네트워크 레이어 케이스 스터디 · 실제 동작 방식을 기억에 의존해 재구성한 일반화 버전<br>
+  <span class="path">lib/sse.ts · api/client.ts</span>
+</div></footer>
 
 <script>
-/* ══════════════ shared: tiny JS/TS highlighter ══════════════ */
-const KW = new Set("const let var function return if else for while await async new try catch finally throw void typeof of in this export import from type interface extends switch case break continue".split(" "));
-const LIT = new Set(["null","undefined","true","false"]);
-const TY  = new Set(["number","string","boolean","Promise","Map","Set","AbortController","RegulationDocumentProgressEvent"]);
-function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function highlight(code){
-  const re=/(\/\/[^\n]*)|(`(?:\\.|[^`\\])*`)|('(?:\\.|[^'\\])*')|("(?:\\.|[^"\\])*")|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][A-Za-z0-9_$]*)|(\s+)|([^\sA-Za-z0-9_$])/g;
-  let out="",m;
-  while((m=re.exec(code))){
-    if(m[1]) out+=`<span class="tok-c">${esc(m[1])}</span>`;
-    else if(m[2]||m[3]||m[4]) out+=`<span class="tok-s">${esc(m[0])}</span>`;
-    else if(m[5]) out+=`<span class="tok-n">${m[5]}</span>`;
-    else if(m[6]){
-      const w=m[6];
-      if(KW.has(w)) out+=`<span class="tok-k">${w}</span>`;
-      else if(LIT.has(w)) out+=`<span class="tok-l">${w}</span>`;
-      else if(TY.has(w)) out+=`<span class="tok-t">${w}</span>`;
-      else if(code[re.lastIndex]==="(") out+=`<span class="tok-f">${w}</span>`;
-      else out+=esc(w);
-    }
-    else out+=esc(m[0]);
-  }
-  return out;
-}
-function snippet(id){return document.getElementById(id).textContent.replace(/^\n/,"").replace(/\s+$/,"");}
+/* ══════════════ 1. SSE STATE MACHINE ══════════════ */
+const STATES=[
+  {id:'connecting',ic:'🔌',t:'connecting',c:'fetch() + AbortController',
+    title:'1. connecting — fetch로 스트림 열기',
+    desc:'EventSource 대신 fetch로 요청한다. Authorization 헤더에 JWT를 실을 수 있는 게 핵심. AbortController를 미리 만들어 외부 signal과 연결해 둔다.',
+    why:'왜 fetch? EventSource는 헤더 주입이 안 돼 JWT 인증이 불가능하기 때문.',
+    code:`<span class="kw">const</span> controller = <span class="kw">new</span> <span class="fn">AbortController</span>();
+<span class="kw">if</span> (options.signal)
+  options.signal.<span class="fn">addEventListener</span>(<span class="str">'abort'</span>,
+    () => controller.<span class="fn">abort</span>(), { once: <span class="kw">true</span> });
 
-/* ══════════════ tab switching ══════════════ */
-document.querySelectorAll(".top-nav button").forEach(b=>{
-  b.addEventListener("click",()=>{
-    document.querySelectorAll(".top-nav button").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    const t=b.dataset.tab;
-    document.getElementById("block-sse").classList.toggle("show",t==="sse");
-    document.getElementById("block-race").classList.toggle("show",t==="race");
-  });
-});
+<span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(url, {
+  method: <span class="str">'GET'</span>,
+  headers: {
+    Accept: <span class="str">'text/event-stream'</span>,
+<span class="hl">    Authorization: \`Bearer \${token}\`,  <span class="cmt">// ← EventSource 불가</span></span>
+  },
+  signal: controller.signal,
+});`},
+  {id:'reading',ic:'📥',t:'reading chunks',c:'reader.read() loop',
+    title:'2. reading — 청크 단위로 읽기',
+    desc:'response.body의 reader로 바이트 청크를 반복해 읽고, TextDecoder로 문자열로 누적한다. 네트워크는 메시지 단위가 아니라 임의 크기 청크로 도착한다.',
+    why:'스트림은 SSE 메시지 경계(\\n\\n)와 무관하게 잘려서 온다 — 그대로 파싱하면 메시지가 깨진다.',
+    code:`<span class="kw">const</span> reader = response.body.<span class="fn">getReader</span>();
+<span class="kw">const</span> decoder = <span class="kw">new</span> <span class="fn">TextDecoder</span>();
+<span class="kw">let</span> buffer = <span class="str">''</span>;
 
-/* ══════════════ SECTION 1 : SSE state machine ══════════════ */
-const SSE_STATES=[
-  {id:"idle",     label:"IDLE",      sub:"trackDocument()",            x:120,y:70,  color:"#94a3b8", code:"code-idle",
-   desc:"trackDocument() 호출 전. 아직 어떤 문서도 추적하지 않는 초기 상태."},
-  {id:"syncing",  label:"SYNCING",   sub:"getDocumentProgressStatus()",x:415,y:70,  color:"#1428A0", code:"code-syncing",
-   desc:"REST로 현재 스냅샷을 먼저 조회. 이미 완료된 문서면 스트림을 열지 않고 즉시 종료해 불필요한 연결을 막는다."},
-  {id:"streaming",label:"STREAMING", sub:'status: "PROCESSING"',      x:415,y:255, color:"#27BFB2", code:"code-streaming",
-   desc:"AbortController로 SSE 연결. onEvent마다 진행률을 갱신하고, 중복 연결은 streamControllersRef로 차단한다."},
-  {id:"completed",label:"COMPLETED", sub:'status: "COMPLETED"',       x:710,y:150, color:"#16a34a", code:"code-final",
-   desc:"종료 이벤트 수신 → finalizeTracking: 스트림 abort + localStorage 정리 + 규제 목록 invalidate."},
-  {id:"failed",   label:"FAILED",    sub:'status: "FAILED"',          x:710,y:360, color:"#dc2626", code:"code-final",
-   desc:"실패 이벤트도 종료로 간주 → COMPLETED와 동일하게 finalizeTracking으로 정리한다."},
-  {id:"retry",    label:"RETRY",     sub:"SSE_RETRY_DELAY_MS = 3000",  x:120,y:255, color:"#d97706", code:"code-retry",
-   desc:"종료 이벤트 없이 스트림이 끊기거나 onError가 발생하면 3초 뒤 SYNCING으로 자동 재연결한다."},
-];
-const SSE_EDGES=[
-  {from:"idle",to:"syncing",label:"track",cls:""},
-  {from:"syncing",to:"streaming",label:"PROCESSING",cls:""},
-  {from:"syncing",to:"completed",label:"스냅샷 완료",cls:"dash"},
-  {from:"streaming",to:"completed",label:"COMPLETED",cls:""},
-  {from:"streaming",to:"failed",label:"FAILED",cls:""},
-  {from:"streaming",to:"retry",label:"끊김/onError",cls:""},
-  {from:"retry",to:"syncing",label:"3s 재연결",cls:""},
-];
-const HALF_W=75,HALF_H=27;
-const byId=id=>SSE_STATES.find(s=>s.id===id);
-function edgePoint(a,b){
-  const dx=b.x-a.x,dy=b.y-a.y;
-  const sx=dx?HALF_W/Math.abs(dx):Infinity, sy=dy?HALF_H/Math.abs(dy):Infinity;
-  const s=Math.min(sx,sy);
-  return {x:a.x+dx*s, y:a.y+dy*s};
+<span class="kw">while</span> (!closed) {
+  <span class="kw">const</span> { done, value } = <span class="kw">await</span> reader.<span class="fn">read</span>();
+  <span class="kw">if</span> (done) <span class="kw">break</span>;
+  buffer += decoder.<span class="fn">decode</span>(value, { stream: <span class="kw">true</span> });
+  <span class="cmt">// → parse 단계로</span>
+}`},
+  {id:'parse',ic:'✂️',t:'parse events',c:"split('\\n\\n') + pop()",
+    title:'3. parse — 버퍼 이월로 프레임 분리',
+    desc:"버퍼를 '\\n\\n'으로 쪼개 완성된 이벤트만 처리하고, 마지막 조각(불완전할 수 있음)은 pop()해서 buffer에 남겨 다음 read로 이월한다. 이게 청크 경계 문제의 해법.",
+    why:'마지막 조각을 pop()해 다음 청크와 이어붙이지 않으면, 청크 중간에서 잘린 이벤트가 유실되거나 깨진 JSON으로 파싱된다.',
+    code:`<span class="kw">const</span> events = buffer.<span class="fn">split</span>(<span class="str">'\\n\\n'</span>);
+<span class="hl">buffer = events.<span class="fn">pop</span>() ?? <span class="str">''</span>;  <span class="cmt">// 불완전 조각 이월</span></span>
+
+<span class="kw">for</span> (<span class="kw">const</span> eventText <span class="kw">of</span> events) {
+  <span class="fn">parseSseChunk</span>(eventText, options.onMessage);
+  <span class="cmt">// event: / data: 라인 분리 후 JSON.parse</span>
+}`},
+  {id:'completed',ic:'✅',t:'completed',c:'controller.abort()',
+    title:'4. completed — 정리(cleanup)',
+    desc:"스트림이 done이거나 외부에서 close()를 호출하면 closed 플래그를 세우고 controller.abort()로 연결을 끊는다. 호출부(연결 레지스트리)가 작업 ID 기준으로 일괄 정리한다.",
+    why:'close()가 명시적으로 abort까지 하지 않으면 fetch 스트림이 백그라운드에 남아 연결 누수가 된다.',
+    code:`<span class="kw">return</span> {
+  close: () => {
+    closed = <span class="kw">true</span>;
+<span class="hl">    controller.<span class="fn">abort</span>();  <span class="cmt">// 스트림 즉시 해제</span></span>
+  },
+};
+
+<span class="cmt">// 호출부: 탭/작업 종료 시</span>
+<span class="cmt">// useConnectionStore.close(jobId)</span>`},
+  {id:'error',ic:'⚠️',t:'error → reconnect',c:'onError → backoff',
+    title:'↻ error — 재연결 분기',
+    desc:'closed/abort가 아닌 예외(네트워크 단절 등)는 onError로 흘려보낸다. 작업이 RUNNING 상태일 때만 2초 후 재연결을 예약해, 끝난 작업에 좀비 연결이 붙지 않게 한다.',
+    why:'무조건 재연결하면 이미 완료/취소된 작업에도 소켓이 재생성된다. 상태 가드로 RUNNING일 때만 재시도.',
+    code:`} <span class="kw">catch</span> (error) {
+<span class="hl">  <span class="kw">if</span> (closed || controller.signal.aborted) <span class="kw">return</span>;  <span class="cmt">// 정상 종료</span></span>
+  options.<span class="fn">onError</span>?.(error);
 }
-const diagram=document.getElementById("diagram");
-const edgesSvg=document.getElementById("edges");
-const SVGNS="http://www.w3.org/2000/svg";
-// arrow marker
-edgesSvg.innerHTML=`<defs>
-  <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
-    <path d="M0,0 L8,4 L0,8 Z" fill="#aab2cf"></path>
-  </marker>
-  <marker id="ahl" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
-    <path d="M0,0 L8,4 L0,8 Z" fill="#27BFB2"></path>
-  </marker>
-</defs>`;
-const edgeEls={};
-SSE_EDGES.forEach((e,i)=>{
-  const a=byId(e.from),b=byId(e.to);
-  const p1=edgePoint(a,b),p2=edgePoint(b,a);
-  const line=document.createElementNS(SVGNS,"line");
-  line.setAttribute("x1",p1.x);line.setAttribute("y1",p1.y);
-  line.setAttribute("x2",p2.x);line.setAttribute("y2",p2.y);
-  line.setAttribute("class","edge "+e.cls);
-  line.setAttribute("marker-end","url(#ah)");
-  edgesSvg.appendChild(line);
-  const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
-  const tx=document.createElementNS(SVGNS,"text");
-  tx.setAttribute("x",mx);tx.setAttribute("y",my-5);
-  tx.setAttribute("text-anchor","middle");tx.setAttribute("class","edge-label");
-  tx.textContent=e.label;
-  edgesSvg.appendChild(tx);
-  edgeEls[e.from+">"+e.to]={line,tx};
+
+<span class="cmt">// useJobStream: scheduleReconnect()</span>
+<span class="kw">if</span> (status === <span class="str">'RUNNING'</span>)
+  <span class="fn">setTimeout</span>(() => <span class="fn">setReconnectKey</span>(k => k+<span class="num">1</span>), <span class="num">2000</span>);`},
+];
+const ORDER=['connecting','reading','parse','completed'];
+const flow=document.getElementById('flow');
+ORDER.forEach((id,i)=>{
+  const s=STATES.find(x=>x.id===id);
+  const node=document.createElement('div');
+  node.className='fnode'; node.dataset.id=id;
+  node.innerHTML=`<div class="ic">${s.ic}</div><div class="ft">${s.t}</div><div class="fc">${s.c}</div>`;
+  node.onclick=()=>selectState(id);
+  flow.appendChild(node);
+  if(i<ORDER.length-1){const a=document.createElement('div');a.className='farrow';a.textContent='→';flow.appendChild(a);}
 });
-// nodes
-const nodeEls={};
-SSE_STATES.forEach(s=>{
-  const n=document.createElement("div");
-  n.className="node";
-  n.style.left=s.x+"px";n.style.top=s.y+"px";
-  n.style.setProperty("--nc",s.color);
-  n.innerHTML=`<div class="nl">${s.label}</div><div class="ns">${s.sub.replace(/</g,"&lt;")}</div>`;
-  n.addEventListener("click",()=>selectState(s.id));
-  diagram.appendChild(n);
-  nodeEls[s.id]=n;
-});
-function litEdge(from,to,on){
-  const e=edgeEls[from+">"+to];if(!e)return;
-  e.line.classList.toggle("lit",on);
-  e.line.setAttribute("marker-end",on?"url(#ahl)":"url(#ah)");
-  e.tx.classList.toggle("lit",on);
-}
+// error node appended separately (branch)
+const errS=STATES.find(x=>x.id==='error');
+const errNode=document.createElement('div');
+errNode.className='fnode'; errNode.dataset.id='error';
+errNode.style.borderColor='#e9d8a6'; errNode.style.background='#fefbf0';
+errNode.innerHTML=`<div class="ic">${errS.ic}</div><div class="ft">${errS.t}</div><div class="fc">${errS.c}</div>`;
+errNode.onclick=()=>selectState('error');
+const a2=document.createElement('div');a2.className='farrow';a2.textContent='↻';
+flow.appendChild(a2); flow.appendChild(errNode);
+
 function selectState(id){
-  SSE_STATES.forEach(s=>nodeEls[s.id].classList.toggle("selected",s.id===id));
-  const s=byId(id);
-  document.getElementById("sseCode").innerHTML=highlight(snippet(s.code))
-    .split("\n").map(l=>`<span class="ln">${l}</span>`).join("\n");
-  document.getElementById("sseFn").textContent=s.code.replace("code-","")+" 분기";
-  document.getElementById("sseDesc").innerHTML=
-    `<span class="st"><span class="pill" style="background:${s.color}">${s.label}</span></span><p>${s.desc}</p>`;
+  document.querySelectorAll('.fnode').forEach(n=>n.classList.toggle('active',n.dataset.id===id));
+  const s=STATES.find(x=>x.id===id);
+  document.getElementById('d-title').textContent=s.title;
+  document.getElementById('d-desc').textContent=s.desc;
+  document.getElementById('d-why').innerHTML='<b>왜:</b> '+s.why;
+  document.getElementById('d-code').innerHTML=s.code;
 }
-selectState("syncing");
+selectState('connecting');
 
-/* ── SSE animations ── */
-const evlog=document.getElementById("evlog");
-let sseTimers=[];
-function clearSse(){sseTimers.forEach(clearTimeout);sseTimers=[];}
-function T(fn,ms){sseTimers.push(setTimeout(fn,ms));}
-function logEv(obj,kind){
-  if(evlog.querySelector(".evlog-empty"))evlog.innerHTML="";
-  const d=document.createElement("div");
-  d.className="ev "+(kind||"");
-  d.innerHTML=`<span class="tag">${kind==="done"?"event: complete":kind==="fail"?"event: failed":"event: progress"}</span>  ${esc(JSON.stringify(obj))}`;
-  evlog.appendChild(d);evlog.scrollTop=evlog.scrollHeight;
-}
-function setActive(id){SSE_STATES.forEach(s=>nodeEls[s.id].classList.toggle("active",s.id===id));}
-function resetSse(){
-  clearSse();
-  SSE_STATES.forEach(s=>{nodeEls[s.id].classList.remove("active");});
-  SSE_EDGES.forEach(e=>litEdge(e.from,e.to,false));
-  evlog.innerHTML='<span class="evlog-empty">// 재생 시 SSE 이벤트가 여기에 출력됩니다</span>';
-  selectState("syncing");
-}
-document.getElementById("playReset").onclick=resetSse;
-
-document.getElementById("playHappy").onclick=()=>{
-  resetSse();
-  setActive("idle");selectState("idle");
-  T(()=>{litEdge("idle","syncing",true);setActive("syncing");selectState("syncing");},700);
-  T(()=>{litEdge("idle","syncing",false);litEdge("syncing","streaming",true);setActive("streaming");selectState("streaming");},1500);
-  const steps=[10,28,46,64,82];
-  steps.forEach((p,i)=>T(()=>logEv({status:"PROCESSING",step:"VECTORIZING",progress:p}),1900+i*520));
-  T(()=>{
-    litEdge("syncing","streaming",false);litEdge("streaming","completed",true);
-    setActive("completed");selectState("completed");
-    logEv({status:"COMPLETED",ragId:1024},"done");
-  },1900+steps.length*520+200);
-  T(()=>{nodeEls.completed.classList.remove("active");},1900+steps.length*520+1600);
-};
-
-document.getElementById("playRetry").onclick=()=>{
-  resetSse();
-  litEdge("syncing","streaming",true);setActive("streaming");selectState("streaming");
-  const steps=[12,30,48];
-  steps.forEach((p,i)=>T(()=>logEv({status:"PROCESSING",step:"PARSING",progress:p}),500+i*500));
-  T(()=>{
-    litEdge("syncing","streaming",false);litEdge("streaming","retry",true);
-    setActive("retry");selectState("retry");
-    logEv({error:"stream closed (종료 이벤트 없음)"},"fail");
-  },2100);
-  // 3s countdown feel
-  [3,2,1].forEach((n,i)=>T(()=>logEv({retryIn:n+"s",delay:"SSE_RETRY_DELAY_MS"}),2600+i*600));
-  T(()=>{
-    litEdge("streaming","retry",false);litEdge("retry","syncing",true);
-    setActive("syncing");selectState("syncing");
-    logEv({status:"PROCESSING",step:"RECONNECT"});
-  },4600);
-  T(()=>{
-    litEdge("retry","syncing",false);litEdge("syncing","streaming",true);
-    setActive("streaming");selectState("streaming");
-  },5400);
-  T(()=>{
-    litEdge("syncing","streaming",false);litEdge("streaming","completed",true);
-    setActive("completed");selectState("completed");
-    logEv({status:"COMPLETED",ragId:1024},"done");
-  },6200);
-  T(()=>nodeEls.completed.classList.remove("active"),7600);
-};
-
-/* ══════════════ SECTION 2 : race condition ══════════════ */
-const RC={idle:"#aab2cf",sent:"#1428A0",got401:"#d97706",refresher:"#7c3aed",queued:"#27BFB2",retrying:"#1428A0",done:"#16a34a"};
-const RLABEL={idle:"대기",sent:"요청 전송",got401:"401 수신",refresher:"토큰 갱신 담당",queued:"큐에서 대기",retrying:"재시도 중",done:"성공 · 200"};
-const BUSY=new Set(["sent","refresher","retrying"]);
-const STEPS=[
-  {note:"보호된 API로 요청 3개를 <b>동시에</b> 전송합니다. 셋 다 같은 (곧 만료될) Access Token을 들고 있습니다.",
-   ref:false,subs:[],token:"만료된 토큰",tokenFresh:false,refreshing:false,count:0,
-   reqs:{1:"sent",2:"sent",3:"sent"},hl:[]},
-  {note:"세 요청 모두 서버에서 <b>401 Unauthorized</b>를 받습니다. 각자 응답 인터셉터로 진입합니다.",
-   ref:false,subs:[],token:"만료된 토큰",tokenFresh:false,refreshing:false,count:0,
-   reqs:{1:"got401",2:"got401",3:"got401"},hl:[1]},
-  {note:"요청 1이 가장 먼저 도착. <code>isRefreshing === false</code>이므로 <b>_retry 플래그를 세우고 '갱신 담당'</b>이 되어 refreshAccessToken()을 호출합니다.",
-   ref:true,subs:[],token:"갱신 요청 중…",tokenFresh:false,refreshing:true,count:0,
-   reqs:{1:"refresher",2:"got401",3:"got401"},hl:[2,14,16]},
-  {note:"요청 2가 진입하지만 <code>isRefreshing === true</code>. 직접 갱신하지 않고 <code>subscribe()</code>로 콜백을 큐에 넣고 <b>대기</b>합니다.",
-   ref:true,subs:[2],token:"갱신 요청 중…",tokenFresh:false,refreshing:true,count:0,
-   reqs:{1:"refresher",2:"queued",3:"got401"},hl:[4,6,7]},
-  {note:"요청 3도 동일하게 큐에 합류. 동시에 401을 맞아도 <b>토큰 갱신은 여전히 1회뿐</b>입니다.",
-   ref:true,subs:[2,3],token:"갱신 요청 중…",tokenFresh:false,refreshing:true,count:0,
-   reqs:{1:"refresher",2:"queued",3:"queued"},hl:[4,6,7]},
-  {note:"refreshAccessToken() 성공 — 새 토큰을 저장하고 <code>isRefreshing = false</code>로 되돌립니다.",
-   ref:false,subs:[2,3],token:"새 토큰 발급 ✓",tokenFresh:true,refreshing:false,count:1,
-   reqs:{1:"refresher",2:"queued",3:"queued"},hl:[16,17]},
-  {note:"<code>notify(newToken)</code>: 큐의 콜백을 모두 깨워 새 토큰으로 재시도시키고 큐를 비웁니다. 요청 1도 자신의 then에서 재시도합니다.",
-   ref:false,subs:[],token:"새 토큰",tokenFresh:true,refreshing:false,count:1,
-   reqs:{1:"retrying",2:"retrying",3:"retrying"},hl:[8,9,18]},
-  {note:"세 요청 모두 <b>200으로 성공</b>. 동시 401에도 토큰 갱신은 정확히 한 번만 일어났습니다.",
-   ref:false,subs:[],token:"새 토큰",tokenFresh:true,refreshing:false,count:1,
-   reqs:{1:"done",2:"done",3:"done"},hl:[20]},
+/* ══════════════ 2. 401 RACE CONDITION ══════════════ */
+const REQS=[
+  {id:'GET /jobs',},{id:'GET /profiles',},{id:'GET /devices',},
 ];
+const lane=document.getElementById('lane');
+const flag=document.getElementById('flag'), flagV=document.getElementById('flag-v');
+const queue=document.getElementById('queue');
+const refreshCall=document.getElementById('refresh-call');
+const narrate=document.getElementById('narrate');
+let raceTimers=[], raceRunning=false;
+function rWait(ms){return new Promise(r=>{const t=setTimeout(r,ms);raceTimers.push(t);});}
+function clearRace(){raceTimers.forEach(t=>clearTimeout(t));raceTimers=[];}
 
-const lanes=document.getElementById("lanes");
-for(let i=1;i<=3;i++){
-  const el=document.createElement("div");
-  el.className="req";el.id="req"+i;
-  el.innerHTML=`<div class="rh"><span class="rname">요청 ${i}</span><span class="rmeta">GET /documents</span></div>
-    <div class="rstatus"><span class="d"></span><span class="rtext">대기</span></div>`;
-  lanes.appendChild(el);
+function buildLane(){
+  lane.querySelectorAll('.req').forEach(n=>n.remove());
+  REQS.forEach((r,i)=>{
+    const el=document.createElement('div');
+    el.className='req'; el.id='req-'+i;
+    el.innerHTML=`<span class="rname">${r.id}</span><span class="spin"></span><span class="rstate">pending</span>`;
+    lane.appendChild(el);
+  });
 }
-const raceCodeLines=snippet("code-race").split("\n");
-function renderRaceCode(hl){
-  document.getElementById("raceCode").innerHTML=raceCodeLines.map((l,i)=>{
-    const n=i+1;
-    return `<span class="ln ${hl.includes(n)?"hl":""}">${highlight(l)||"&nbsp;"}</span>`;
-  }).join("\n");
+function setReq(i,state,label){
+  const el=document.getElementById('req-'+i);
+  el.className='req s-'+state;
+  el.querySelector('.rstate').textContent=label;
 }
-let step=0;let autoTimer=null;
-function renderStep(){
-  const s=STEPS[step];
-  // requests
-  for(let i=1;i<=3;i++){
-    const st=s.reqs[i];const el=document.getElementById("req"+i);
-    el.style.setProperty("--rc",RC[st]);
-    el.classList.toggle("busy",BUSY.has(st));
-    el.querySelector(".rtext").textContent=RLABEL[st];
-  }
-  // flag
-  const fb=document.getElementById("flagBox");
-  fb.classList.toggle("on",s.ref);
-  document.getElementById("flagVal").textContent="isRefreshing = "+s.ref;
-  // refresh box
-  const rb=document.getElementById("refreshBox");
-  rb.classList.toggle("refreshing",s.refreshing);
-  const tp=document.getElementById("tokenPill");
-  tp.textContent=s.token;tp.classList.toggle("fresh",s.tokenFresh);
-  document.getElementById("refreshCount").textContent=s.count;
-  // queue
-  const q=document.getElementById("queue");
-  if(s.subs.length===0){q.innerHTML='<span class="empty">// 비어 있음</span>';}
-  else{q.innerHTML=s.subs.map(id=>`<span class="chip">요청 ${id} <span class="sub">cb()</span></span>`).join("");}
-  // narration + code + progress
-  document.getElementById("stepNo").textContent=step;
-  document.getElementById("narrText").innerHTML=s.note;
-  renderRaceCode(s.hl);
-  document.getElementById("raceFill").style.width=Math.round(step/(STEPS.length-1)*100)+"%";
-  document.getElementById("racePrev").disabled=(step===0);
-  document.getElementById("raceNext").disabled=(step===STEPS.length-1);
+function setFlag(v){flag.classList.toggle('on',v);flagV.textContent=String(v);}
+function setNarr(n,txt){narrate.innerHTML=`<span class="step-n">${n}</span><span>${txt}</span>`;}
+function addQ(i){
+  queue.classList.add('has');
+  const q=document.createElement('div');q.className='qitem';q.id='q-'+i;q.textContent=REQS[i].id;
+  queue.appendChild(q);
 }
-function stopAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;document.getElementById("raceAuto").textContent="▶▶ 자동 재생";}}
-document.getElementById("raceNext").onclick=()=>{stopAuto();if(step<STEPS.length-1){step++;renderStep();}};
-document.getElementById("racePrev").onclick=()=>{stopAuto();if(step>0){step--;renderStep();}};
-document.getElementById("raceReset").onclick=()=>{stopAuto();step=0;renderStep();};
-document.getElementById("raceAuto").onclick=function(){
-  if(autoTimer){stopAuto();return;}
-  if(step===STEPS.length-1)step=0;
-  this.textContent="⏸ 일시정지";renderStep();
-  autoTimer=setInterval(()=>{
-    if(step>=STEPS.length-1){stopAuto();return;}
-    step++;renderStep();
-  },1500);
-};
-renderStep();
+function clearQ(){queue.classList.remove('has');queue.innerHTML='';}
+function setRefresh(active,txt){refreshCall.classList.toggle('active',active);refreshCall.textContent=txt;}
+
+function resetRace(){
+  clearRace(); raceRunning=false;
+  buildLane(); setFlag(false); clearQ(); setRefresh(false,'POST /auth/refresh · idle');
+  setNarr(0,'버튼을 눌러 시뮬레이션을 시작하세요.');
+  document.getElementById('btn-race').disabled=false;
+}
+
+async function runRace(){
+  if(raceRunning)return; resetRace(); raceRunning=true;
+  document.getElementById('btn-race').disabled=true;
+
+  // 1) 3 requests fire & all get 401 nearly simultaneously
+  setNarr(1,'요청 3개가 동시에 전송됨 → 만료 토큰이라 셋 다 401 반환');
+  await rWait(500);
+  for(let i=0;i<3;i++){ setReq(i,'401','401 Unauthorized'); await rWait(140); }
+  await rWait(500);
+
+  // 2) req0 reaches interceptor first → isRefreshing false → becomes leader
+  setNarr(2,'GET /jobs 가 인터셉터 진입 — isRefreshing=false 이므로 refresh 리더가 됨');
+  flag.scrollIntoView?.({block:'nearest'});
+  setFlag(true);
+  setReq(0,'retry','refresh 중 (leader)');
+  setRefresh(true,'POST /auth/refresh · 호출 1회 ●');
+  await rWait(900);
+
+  // 3) req1, req2 enter while isRefreshing true → queued
+  setNarr(3,'나머지 2개는 isRefreshing=true → 직접 호출 않고 refreshSubscribers[] 큐에 대기');
+  setReq(1,'wait','queued'); addQ(1); await rWait(450);
+  setReq(2,'wait','queued'); addQ(2); await rWait(700);
+
+  // 4) refresh resolves → setState + flush queue
+  setNarr(4,'refresh 성공 → accessToken 갱신 → flushRefreshSubscribers(newToken) 으로 큐 일괄 깨움');
+  setRefresh(false,'200 OK · access_token 갱신 ✓');
+  setFlag(false);
+  await rWait(500);
+  // flush queued
+  document.getElementById('q-1')?.remove();
+  setReq(1,'retry','새 토큰으로 재시도');
+  await rWait(350);
+  document.getElementById('q-2')?.remove();
+  setReq(2,'retry','새 토큰으로 재시도');
+  clearQ();
+  await rWait(800);
+
+  // 5) all retried → 200
+  setNarr(5,'세 요청 모두 새 토큰으로 재요청 → 200 OK. refresh는 단 1회만 호출됨 ✓');
+  setReq(0,'ok','200 OK'); await rWait(160);
+  setReq(1,'ok','200 OK'); await rWait(160);
+  setReq(2,'ok','200 OK');
+  setRefresh(false,'POST /auth/refresh · 총 1회 (3회 아님) ✓');
+
+  raceRunning=false; document.getElementById('btn-race').disabled=false;
+}
+
+document.getElementById('btn-race').onclick=runRace;
+document.getElementById('btn-race-reset').onclick=resetRace;
+resetRace();
 </script>
 </body>
 </html>
