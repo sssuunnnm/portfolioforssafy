@@ -1,7 +1,7 @@
 # portfolioforssafy
 
 포폴데이/
-├── portfolio.html
+├── index.html
 ├── screens/
 │   ├── onestep/
 │   │   ├── walk.png
